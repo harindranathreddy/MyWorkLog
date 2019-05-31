@@ -1,13 +1,16 @@
 package com.cerner.shipit.taskmanagement.service.jiraapi;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -23,16 +26,18 @@ public class JiraApi {
 
 	Logger logger = LoggerFactory.getLogger(JiraApi.class);
 
-	public CloseableHttpResponse fetchJiraDetailsById(String UserId) throws TaskManagementServiceException {
+	public String getInProgressJiraDetailsByUserId(String UserId) throws TaskManagementServiceException {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
-				MethodConstants.FETCH_JIRADETAILS_BY_USERID);
-		CloseableHttpResponse response = null;
+				MethodConstants.GET_JIRADETAILS_BY_USERID);
+		String jiraDetails;
 		try {
-			final CloseableHttpClient client = HttpClients.createDefault();
-			final HttpGet httpGet = new HttpGet(
-					"https://jira2.cerner.com/rest/api/2/search?jql=assignee=%22" + UserId + "%22");
-			response = client.execute(httpGet);
-			client.close();
+			URL jiraURL = new URL("https://jira2.cerner.com/rest/api/2/search?jql=assignee=%22" + UserId
+					+ "%22+AND+status=%22IN%20PROGRESS%22");
+			HttpURLConnection connection = (HttpURLConnection) jiraURL.openConnection();
+			connection.setRequestMethod("GET");
+			connection.connect();
+			Reader in = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+			jiraDetails = IOUtils.toString(in);
 		} catch (final UnsupportedEncodingException e) {
 			logger.error(ErrorCodes.E01, ErrorMessages.JIRA_DETAILS);
 			throw new TaskManagementServiceException(ErrorCodes.E01, ErrorMessages.JIRA_DETAILS);
@@ -45,7 +50,7 @@ public class JiraApi {
 		}
 
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
-				MethodConstants.FETCH_JIRADETAILS_BY_USERID);
-		return response;
+				MethodConstants.GET_JIRADETAILS_BY_USERID);
+		return jiraDetails;
 	}
 }

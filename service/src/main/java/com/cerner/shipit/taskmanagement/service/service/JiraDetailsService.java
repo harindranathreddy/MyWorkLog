@@ -5,10 +5,10 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.cerner.shipit.taskmanagement.exception.TaskManagementServiceException;
-import com.cerner.shitit.taskmanagement.utility.tos.JiraDetails;
+import com.cerner.shipit.taskmanagement.utility.tos.JiraTO;
 
 @Service
 public interface JiraDetailsService {
 
-	List<JiraDetails> fetchJiraDetailsByUserId(String UserId) throws TaskManagementServiceException;
+	List<JiraTO> getJiraDetailsByUserId(String UserId) throws TaskManagementServiceException;
 }

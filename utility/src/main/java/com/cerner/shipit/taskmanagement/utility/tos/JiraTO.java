@@ -1,6 +1,6 @@
-package com.cerner.shitit.taskmanagement.utility.tos;
+package com.cerner.shipit.taskmanagement.utility.tos;
 
-public class JiraDetails {
+public class JiraTO {
 
 	private String Id;
 	private String Summery;

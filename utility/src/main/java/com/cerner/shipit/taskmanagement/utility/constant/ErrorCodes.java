@@ -5,6 +5,7 @@ public class ErrorCodes {
 	public static final String E01 = "E01";
 	public static final String E02 = "E02";
 	public static final String E03 = "E03";
+	public static final String E04 = "E04";
 
 	private ErrorCodes() {
 

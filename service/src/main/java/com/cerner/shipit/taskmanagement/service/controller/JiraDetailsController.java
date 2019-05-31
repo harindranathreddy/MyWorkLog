@@ -6,7 +6,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,7 +19,8 @@ import com.cerner.shipit.taskmanagement.service.factory.JiraDetailsFactory;
 import com.cerner.shipit.taskmanagement.service.service.JiraDetailsService;
 import com.cerner.shipit.taskmanagement.utility.constant.GeneralConstants;
 import com.cerner.shipit.taskmanagement.utility.constant.MethodConstants;
-import com.cerner.shitit.taskmanagement.utility.tos.JiraDetails;
+import com.cerner.shipit.taskmanagement.utility.response.Response;
+import com.cerner.shipit.taskmanagement.utility.tos.JiraTO;
 
 @RestController
 @RequestMapping("/details")
@@ -36,20 +39,23 @@ public class JiraDetailsController {
 	 * @throws TaskManagementServiceException
 	 */
 	@GetMapping(value = "/jiraDetailsByUserId", produces = MediaType.APPLICATION_JSON_VALUE)
-	public Object fetchJiraDetailsByUserId(@RequestParam(value = "userId") String userId)
-			throws TaskManagementServiceException {
+	public Object getJiraDetailsByUserId(@RequestParam(value = "userId") String userId) {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
-				MethodConstants.FETCH_JIRADETAILS_BY_USERID);
-		List<JiraDetails> jiraDetilas = new ArrayList<JiraDetails>();
+				MethodConstants.GET_JIRADETAILS_BY_USERID);
+		List<JiraTO> jiraDetilas = new ArrayList<>();
+		ResponseEntity<Object> responseEntity = null;
+		Response response = new Response();
 		try {
 			final JiraDetailsService jiraDetailsService = jiraDetailsFactory
 					.getJiraDetailsServiceInstance("jiraDetailsServiceImpl");
-			jiraDetilas = jiraDetailsService.fetchJiraDetailsByUserId(userId);
+			jiraDetilas = jiraDetailsService.getJiraDetailsByUserId(userId);
+			responseEntity = ResponseEntity.status(HttpStatus.OK)
+					.body(response.getSuccessResposne("S01", "Jira Details", jiraDetilas));
 		} catch (final TaskManagementServiceException e) {
-			throw e;
+			responseEntity = ResponseEntity.status(HttpStatus.OK).body(response.getErrorResponse(e));
 		}
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
-				MethodConstants.FETCH_JIRADETAILS_BY_USERID);
-		return jiraDetilas;
+				MethodConstants.GET_JIRADETAILS_BY_USERID);
+		return responseEntity;
 	}
 }

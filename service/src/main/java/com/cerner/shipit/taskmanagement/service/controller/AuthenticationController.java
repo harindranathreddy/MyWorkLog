@@ -74,7 +74,7 @@ public class AuthenticationController {
 			connection.setRequestProperty("Content-Type", "application/json");
 			connection.setDoOutput(true);
 			connection.setDoInput(true);
-			String userCredentials = "HK063220:***********";
+			String userCredentials = "HK063220:H@r!ndra@3oo9";
 			String basicAuth = "Basic " + new String(new Base64().encode(userCredentials.getBytes()));
 			connection.setRequestProperty("Authorization", basicAuth);
 			connection.connect();
