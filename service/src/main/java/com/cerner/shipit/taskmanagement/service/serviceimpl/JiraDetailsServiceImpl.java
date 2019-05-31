@@ -60,6 +60,7 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 				jira.setStatus(status.getString("name"));
 				JSONObject issueType = fields.getJSONObject("issuetype");
 				jira.setType(issueType.getString("name"));
+				jira.setLastLoggedDate(getJiraLastWorkLogDate(jiraObject.getString("key")));
 				jiraDetails.add(jira);
 			}
 		} catch (JSONException e) {
@@ -68,5 +69,33 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 		}
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.FILTER_JIRADETAILS);
 		return jiraDetails;
+	}
+
+	public String getJiraLastWorkLogDate(String issueKey) throws TaskManagementServiceException {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
+				MethodConstants.GET_JIRA_WORKLOG_DATE);
+		String jiraWorkLog = jiraApi.getWorkLogDataByJiraId(issueKey);
+		String lastLoggedDate = filterWorkLogs(jiraWorkLog);
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
+				MethodConstants.GET_JIRA_WORKLOG_DATE);
+		return lastLoggedDate;
+	}
+
+	private String filterWorkLogs(String jiraWorkLog) throws TaskManagementServiceException {
+		String lastLoggedDate = null;
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START, MethodConstants.FILTER_WORKLOGS);
+		try {
+			JSONObject jsonObject = new JSONObject(jiraWorkLog);
+			String workLogArray = jsonObject.getString("worklogs");
+			JSONArray jiraList = new JSONArray(workLogArray);
+			JSONObject latestWorkLogObject = jiraList.getJSONObject(jiraList.length() - 1);
+			lastLoggedDate = latestWorkLogObject.getString("started").substring(0,
+					latestWorkLogObject.getString("started").indexOf("T"));
+		} catch (JSONException e) {
+			logger.error(ErrorCodes.E04, ErrorMessages.FILTER_LAST_WORKLOG_DETAILS);
+			throw new TaskManagementServiceException(ErrorCodes.E04, ErrorMessages.FILTER_LAST_WORKLOG_DETAILS);
+		}
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.FILTER_WORKLOGS);
+		return lastLoggedDate;
 	}
 }
