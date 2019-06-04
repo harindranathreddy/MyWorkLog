@@ -3,8 +3,12 @@ package com.cerner.shipit.taskmanagement.utility.tos;
 public class WorkLogDetailsTO {
 
 	String id;
-	String time;
+	String started;
+	String timeSpent;
 	String comment;
+	String self;
+	Object author;
+	Object updateAuthor;
 
 	public String getId() {
 		return id;
@@ -14,12 +18,12 @@ public class WorkLogDetailsTO {
 		this.id = id;
 	}
 
-	public String getTime() {
-		return time;
+	public String getStarted() {
+		return started;
 	}
 
-	public void setTime(String time) {
-		this.time = time;
+	public void setStarted(String time) {
+		this.started = time;
 	}
 
 	public String getComment() {
@@ -30,4 +34,37 @@ public class WorkLogDetailsTO {
 		this.comment = comment;
 	}
 
+	public String getTimeSpent() {
+		return timeSpent;
+	}
+
+	public void setTimeSpent(String timeSpent) {
+		this.timeSpent = timeSpent;
+	}
+
+	public String getSelf() {
+		return self;
+	}
+
+	public void setSelf(String self) {
+		this.self = self;
+	}
+
+	public Object getAuthor() {
+		return author;
+	}
+
+	public void setAuthor(Object author) {
+		this.author = author;
+	}
+
+	public Object getUpdateAuthor() {
+		return updateAuthor;
+	}
+
+	public void setUpdateAuthor(Object updateAuthor) {
+		this.updateAuthor = updateAuthor;
+	}
+
+	
 }

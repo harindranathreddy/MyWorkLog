@@ -11,10 +11,6 @@ import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -42,15 +38,23 @@ public class AuthenticationController {
 	public void authenticateUser(@RequestParam(value = "userName") String userName,
 			@RequestParam(value = "password") String password) {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START, MethodConstants.AUTHENTICATE_USER);
-
+		URL jiraURL;
 		try {
-			CloseableHttpClient client = HttpClients.createDefault();
-			HttpGet httpGet = new HttpGet("https://jira2.cerner.com");
-			String auth = new String(Base64.encodeBase64((userName + ":" + password).getBytes()));
-			httpGet.addHeader("Authorization", "BASIC " + auth);
-			CloseableHttpResponse response = client.execute(httpGet);
-			System.out.println(response);
-			client.close();
+			jiraURL = new URL("https://jira2.cerner.com");
+			HttpURLConnection connection = (HttpURLConnection) jiraURL.openConnection();
+			connection.setRequestMethod("GET");
+			connection.setRequestProperty("Accept", "*/*");
+			connection.setRequestProperty("Content-Type", "application/json");
+			connection.setDoOutput(true);
+			connection.setDoInput(true);
+			String userCredentials = userName + ":" + password;
+			String basicAuth = "Basic " + new String(new Base64().encode(userCredentials.getBytes()));
+			connection.setRequestProperty("Authorization", basicAuth);
+			connection.connect();
+			Reader in = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+			for (int c; (c = in.read()) >= 0; System.out.print((char) c)) {
+				;
+			}
 		} catch (final UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -67,9 +71,9 @@ public class AuthenticationController {
 	public static void main(String[] args) {
 		URL jiraURL;
 		try {
-			jiraURL = new URL("https://jira2.cerner.com");
+			jiraURL = new URL("https://jira2.cerner.com/");
 			HttpURLConnection connection = (HttpURLConnection) jiraURL.openConnection();
-			connection.setRequestMethod("GET");
+			connection.setRequestMethod("POST");
 			connection.setRequestProperty("Accept", "*/*");
 			connection.setRequestProperty("Content-Type", "application/json");
 			connection.setDoOutput(true);
@@ -79,6 +83,7 @@ public class AuthenticationController {
 			connection.setRequestProperty("Authorization", basicAuth);
 			connection.connect();
 			Reader in = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+			System.out.println(connection.getResponseCode());
 			for (int c; (c = in.read()) >= 0; System.out.print((char) c)) {
 				;
 			}

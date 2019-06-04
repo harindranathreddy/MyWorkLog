@@ -9,6 +9,7 @@ public class MethodConstants {
 	public static final String GET_JIRA_WORKLOG_DATE = "getJiraLastWorkLogDate";
 	public static final String FILTER_WORKLOGS = "filterWorkLogs";
 	public static final String GET_WORKLOG_DATA_BY_JIRAID = "getWorkLogDataByJiraId";
+	public static final String GET_JIRAAUTHENTACTION_SERVICE_INSTANCE = "getJiraAuthentactionServiceInstance";
 	
 	private MethodConstants() {
 

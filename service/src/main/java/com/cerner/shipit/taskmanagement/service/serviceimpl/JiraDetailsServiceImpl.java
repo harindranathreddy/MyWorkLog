@@ -20,6 +20,7 @@ import com.cerner.shipit.taskmanagement.utility.constant.ErrorMessages;
 import com.cerner.shipit.taskmanagement.utility.constant.GeneralConstants;
 import com.cerner.shipit.taskmanagement.utility.constant.MethodConstants;
 import com.cerner.shipit.taskmanagement.utility.tos.JiraTO;
+import com.cerner.shipit.taskmanagement.utility.tos.WorkLogInfoTO;
 
 @Service
 @Component("jiraDetailsServiceImpl")
@@ -88,14 +89,27 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 			JSONObject jsonObject = new JSONObject(jiraWorkLog);
 			String workLogArray = jsonObject.getString("worklogs");
 			JSONArray jiraList = new JSONArray(workLogArray);
-			JSONObject latestWorkLogObject = jiraList.getJSONObject(jiraList.length() - 1);
-			lastLoggedDate = latestWorkLogObject.getString("started").substring(0,
-					latestWorkLogObject.getString("started").indexOf("T"));
+			if (jiraList.length() > 0) {
+				JSONObject latestWorkLogObject = jiraList.getJSONObject(jiraList.length() - 1);
+				lastLoggedDate = latestWorkLogObject.getString("started").substring(0,
+						latestWorkLogObject.getString("started").indexOf("T"));
+			} else {
+				lastLoggedDate = "Never Logged";
+			}
 		} catch (JSONException e) {
 			logger.error(ErrorCodes.E04, ErrorMessages.FILTER_LAST_WORKLOG_DETAILS);
 			throw new TaskManagementServiceException(ErrorCodes.E04, ErrorMessages.FILTER_LAST_WORKLOG_DETAILS);
 		}
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.FILTER_WORKLOGS);
 		return lastLoggedDate;
+	}
+	
+	public String putJiraDetailsByUserId(WorkLogInfoTO workLogInfo) throws TaskManagementServiceException {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
+				MethodConstants.GET_JIRADETAILS_BY_USERID);
+		String jiraDetailsfromApi = jiraApi.putJiraDetailsByUserId(workLogInfo);
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
+				MethodConstants.GET_JIRADETAILS_BY_USERID);
+		return jiraDetailsfromApi;
 	}
 }
