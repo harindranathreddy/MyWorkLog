@@ -10,7 +10,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -114,7 +113,6 @@ public class JiraApi {
 						+ "/worklog?adjustEstimate=AUTO&newEstimate&reduceBy");
 				temp.setId("");
 				connection = (HttpURLConnection) jiraURL.openConnection();
-				temp.setStarted((new Date()).toString());
 				connection.setRequestMethod("POST");
 				connection.setRequestProperty("Content-Type", "application/json");
 				connection.setRequestProperty("Accept", "application/json");
