@@ -41,7 +41,7 @@ public class JiraApi {
 		HttpURLConnection connection = null;
 		try {
 			URL jiraURL = new URL("https://jira2.cerner.com/rest/api/2/search?jql=assignee=%22" + UserId
-					+ "%22+AND+status=%22IN%20PROGRESS%22");
+					+ "%22+AND+status%20in%20(\"IN%20PROGRESS\",\"IN%20REVIEW\")");
 			connection = (HttpURLConnection) jiraURL.openConnection();
 			connection.setRequestMethod("GET");
 			connection.connect();
@@ -99,8 +99,9 @@ public class JiraApi {
 		return jiraDetails;
 	}
 
-	public String putJiraDetailsByUserId(WorkLogInfoTO workLogInfo) throws TaskManagementServiceException {
+	public int addWorkLog(WorkLogInfoTO workLogInfo) throws TaskManagementServiceException {
 		HttpURLConnection connection = null;
+		int response = 0;
 		try {
 			String auth = new String(
 					Base64.encodeBase64((workLogInfo.getUserName() + ":" + workLogInfo.getPassword()).getBytes()));
@@ -125,22 +126,54 @@ public class JiraApi {
 				wr.flush();
 				wr.close();
 				connection.connect();
-				System.out.println(connection.getResponseCode());
-				System.out.println(connection.getResponseMessage());
+				if (connection.getResponseCode() == 201) {
+					response = connection.getResponseCode();
+				} else {
+					throw new TaskManagementServiceException(ErrorCodes.W02, ErrorMessages.WORKLOG_FAILED_TO_ADD);
+				}
 			}
 		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new TaskManagementServiceException(ErrorCodes.W03,
+					ErrorMessages.WORKLOG_FAILED_TO_ADD_DUE_TO_MALFORMEDURLEXCEPTION);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new TaskManagementServiceException(ErrorCodes.W04,
+					ErrorMessages.WORKLOG_FAILED_TO_ADD_DUE_TO_IOEXCEPTION);
 		} finally {
 			if (connection != null) {
 				connection.disconnect();
 			}
 		}
 
-		return null;
+		return response;
 
+	}
+
+	public int authenticateUser(String userName, String password) throws TaskManagementServiceException {
+		URL jiraURL;
+		int responseCode = 0;
+		try {
+			jiraURL = new URL("https://jira2.cerner.com");
+			HttpURLConnection connection = (HttpURLConnection) jiraURL.openConnection();
+			connection.setRequestMethod("GET");
+			connection.setRequestProperty("Accept", "*/*");
+			connection.setRequestProperty("Content-Type", "application/json");
+			connection.setDoOutput(true);
+			connection.setDoInput(true);
+			String userCredentials = userName + ":" + password;
+			String basicAuth = "Basic " + new String(new Base64().encode(userCredentials.getBytes()));
+			connection.setRequestProperty("Authorization", basicAuth);
+			connection.connect();
+			responseCode = connection.getResponseCode();
+			if (responseCode != 200) {
+				throw new TaskManagementServiceException(ErrorCodes.E05, ErrorMessages.FAILED_TO_AUTHENTICATE_USER);
+			}
+		} catch (final UnsupportedEncodingException e) {
+			throw new TaskManagementServiceException(ErrorCodes.E05, ErrorMessages.FAILED_TO_AUTHENTICATE_USER);
+		} catch (final ClientProtocolException e) {
+			throw new TaskManagementServiceException(ErrorCodes.E05, ErrorMessages.FAILED_TO_AUTHENTICATE_USER);
+		} catch (final IOException e) {
+			throw new TaskManagementServiceException(ErrorCodes.E05, ErrorMessages.FAILED_TO_AUTHENTICATE_USER);
+		}
+		return responseCode;
 	}
 }

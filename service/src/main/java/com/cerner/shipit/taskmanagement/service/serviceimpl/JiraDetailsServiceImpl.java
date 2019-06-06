@@ -103,13 +103,14 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.FILTER_WORKLOGS);
 		return lastLoggedDate;
 	}
-	
-	public String putJiraDetailsByUserId(WorkLogInfoTO workLogInfo) throws TaskManagementServiceException {
+
+	@Override
+	public int addWorkLog(WorkLogInfoTO workLogInfo) throws TaskManagementServiceException {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
 				MethodConstants.GET_JIRADETAILS_BY_USERID);
-		String jiraDetailsfromApi = jiraApi.putJiraDetailsByUserId(workLogInfo);
+		int responseStatus = jiraApi.addWorkLog(workLogInfo);
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
 				MethodConstants.GET_JIRADETAILS_BY_USERID);
-		return jiraDetailsfromApi;
+		return responseStatus;
 	}
 }

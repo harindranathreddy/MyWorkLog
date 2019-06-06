@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cerner.shipit.taskmanagement.exception.TaskManagementServiceException;
 import com.cerner.shipit.taskmanagement.service.factory.JiraDetailsFactory;
 import com.cerner.shipit.taskmanagement.service.service.JiraDetailsService;
+import com.cerner.shipit.taskmanagement.utility.constant.ErrorCodes;
+import com.cerner.shipit.taskmanagement.utility.constant.ErrorMessages;
 import com.cerner.shipit.taskmanagement.utility.constant.GeneralConstants;
 import com.cerner.shipit.taskmanagement.utility.constant.MethodConstants;
 import com.cerner.shipit.taskmanagement.utility.response.Response;
@@ -52,8 +54,8 @@ public class JiraDetailsController {
 			final JiraDetailsService jiraDetailsService = jiraDetailsFactory
 					.getJiraDetailsServiceInstance("jiraDetailsServiceImpl");
 			jiraDetilas = jiraDetailsService.getJiraDetailsByUserId(userId);
-			responseEntity = ResponseEntity.status(HttpStatus.OK)
-					.body(response.getSuccessResposne("S01", "Jira Details", jiraDetilas));
+			responseEntity = ResponseEntity.status(HttpStatus.OK).body(response.getSuccessResposne(ErrorCodes.J01,
+					ErrorMessages.JIRA_DETAIALS_FETCHED_SUCCESFULLY, jiraDetilas));
 		} catch (final TaskManagementServiceException e) {
 			responseEntity = ResponseEntity.status(HttpStatus.OK).body(response.getErrorResponse(e));
 		}
@@ -63,20 +65,22 @@ public class JiraDetailsController {
 	}
 
 	// Logging the work
-	@PostMapping(value = "/workLogByUserId", produces = MediaType.APPLICATION_JSON_VALUE)
-	public Object putWorkLogByUserId(@RequestBody WorkLogInfoTO workLogInfoTo) {
+	@PostMapping(value = "/addWorkLog", produces = MediaType.APPLICATION_JSON_VALUE)
+	public Object addWorkLog(@RequestBody WorkLogInfoTO workLogInfoTo) {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START, MethodConstants.ADD_WORK_LOG);
 		ResponseEntity<Object> responseEntity = null;
 		Response response = new Response();
-		String Status;
+		int responseStatus;
 		try {
 			final JiraDetailsService jiraDetailsService = jiraDetailsFactory
 					.getJiraDetailsServiceInstance("jiraDetailsServiceImpl");
-			Status = jiraDetailsService.putJiraDetailsByUserId(workLogInfoTo);
-			responseEntity = ResponseEntity.status(HttpStatus.OK)
-					.body(response.getSuccessResposne("S01", "Jira Details", Status));
+			responseStatus = jiraDetailsService.addWorkLog(workLogInfoTo);
+			responseEntity = ResponseEntity.status(HttpStatus.OK).body(response.getSuccessResposne(ErrorCodes.W01,
+					ErrorMessages.WORKLOG_ADDED_SUCCESFULLY, responseStatus));
 		} catch (final TaskManagementServiceException e) {
 			responseEntity = ResponseEntity.status(HttpStatus.OK).body(response.getErrorResponse(e));
 		}
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.ADD_WORK_LOG);
 		return responseEntity;
 	}
 }

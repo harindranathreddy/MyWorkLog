@@ -12,5 +12,6 @@ import com.cerner.shipit.taskmanagement.utility.tos.WorkLogInfoTO;
 public interface JiraDetailsService {
 
 	List<JiraTO> getJiraDetailsByUserId(String UserId) throws TaskManagementServiceException;
-	String putJiraDetailsByUserId(WorkLogInfoTO workLogInfo) throws TaskManagementServiceException;
+
+	int addWorkLog(WorkLogInfoTO workLogInfo) throws TaskManagementServiceException;
 }

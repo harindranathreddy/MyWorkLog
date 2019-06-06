@@ -20,4 +20,11 @@ public class Response {
 		errorResponseTO.setResponseMessage(e.getErrorMessage());
 		return errorResponseTO;
 	}
+
+	public Object getErrorResponse(String responseCode, String responseMessage) {
+		ErrorResponseTO errorResponseTO = new ErrorResponseTO();
+		errorResponseTO.setResponseCode(responseCode);
+		errorResponseTO.setResponseMessage(responseMessage);
+		return errorResponseTO;
+	}
 }
