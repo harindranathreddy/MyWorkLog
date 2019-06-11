@@ -109,7 +109,7 @@ public class JiraDetailsController {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.GET_DATES);
 		return responseEntity;
 	}
-	
+
 	/**
 	 * This will fetch the jiras based on the Jira Id.
 	 *

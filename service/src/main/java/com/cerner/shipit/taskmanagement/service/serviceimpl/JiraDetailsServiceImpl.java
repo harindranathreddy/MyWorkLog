@@ -128,7 +128,7 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 		}
 		return dates;
 	}
-	
+
 	@Override
 	public List<JiraTO> getJiraSearchDetails(String issueKey) throws TaskManagementServiceException {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
