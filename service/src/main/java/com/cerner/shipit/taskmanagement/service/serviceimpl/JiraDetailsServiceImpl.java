@@ -113,4 +113,16 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 				MethodConstants.GET_JIRADETAILS_BY_USERID);
 		return responseStatus;
 	}
+	
+	@Override
+	public List<JiraTO> getJiraSearchDetails(String issueKey) throws TaskManagementServiceException {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
+				MethodConstants.GET_JIRADETAILS_BY_USERID);
+		List<JiraTO> jiraDetails = new ArrayList<>();
+		String jiraDetailsfromApi = jiraApi.getJiraSearch(issueKey);
+		jiraDetails = filterJiraDetails(jiraDetailsfromApi);
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
+				MethodConstants.GET_JIRADETAILS_BY_USERID);
+		return jiraDetails;
+	}
 }

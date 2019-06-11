@@ -176,4 +176,32 @@ public class JiraApi {
 		}
 		return responseCode;
 	}
+	
+	public String getJiraSearch(String issueKey) throws TaskManagementServiceException{
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
+				MethodConstants.GET_JIRADETAILS_BY_USERID);
+		String jiraDetails;
+		try {
+			URL jiraURL = new URL("https://jira2.cerner.com/rest/api/2/search?jql=issue=%22" + issueKey + "%22");
+			HttpURLConnection connection = (HttpURLConnection) jiraURL.openConnection();
+			connection.setRequestMethod("GET");
+			connection.connect();
+			Reader in = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+			jiraDetails = IOUtils.toString(in);
+		} catch (final UnsupportedEncodingException e) {
+			logger.error(ErrorCodes.E01, ErrorMessages.JIRA_DETAILS);
+			throw new TaskManagementServiceException(ErrorCodes.E01, ErrorMessages.JIRA_DETAILS);
+		} catch (final ClientProtocolException e) {
+			logger.error(ErrorCodes.E02, ErrorMessages.JIRA_DETAILS);
+			throw new TaskManagementServiceException(ErrorCodes.E02, ErrorMessages.JIRA_DETAILS);
+		} catch (final IOException e) {
+			logger.error(ErrorCodes.E03, ErrorMessages.JIRA_DETAILS);
+			throw new TaskManagementServiceException(ErrorCodes.E03, ErrorMessages.JIRA_DETAILS);
+		}
+
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
+				MethodConstants.GET_JIRADETAILS_BY_USERID);
+		return jiraDetails;
+
+	}
 }
