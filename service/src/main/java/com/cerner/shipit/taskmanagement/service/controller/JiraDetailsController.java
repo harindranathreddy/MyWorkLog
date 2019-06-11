@@ -85,4 +85,56 @@ public class JiraDetailsController {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.ADD_WORK_LOG);
 		return responseEntity;
 	}
+
+	@GetMapping(value = "/getDates", produces = MediaType.APPLICATION_JSON_VALUE)
+	public Object getDates(@RequestParam(value = "lastLoggedDate") String lastLoggedDate) {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START, MethodConstants.GET_DATES);
+		List<String> dates = new ArrayList<>();
+		ResponseEntity<Object> responseEntity = null;
+		Response response = new Response();
+		final JiraDetailsService jiraDetailsService = jiraDetailsFactory
+				.getJiraDetailsServiceInstance("jiraDetailsServiceImpl");
+		if (!lastLoggedDate.equalsIgnoreCase("0")) {
+			dates = jiraDetailsService.getDates(lastLoggedDate);
+		} else {
+			dates = null;
+		}
+		if ((dates != null) && !dates.isEmpty()) {
+			responseEntity = ResponseEntity.status(HttpStatus.OK)
+					.body(response.getSuccessResposne(ErrorCodes.D01, ErrorMessages.DATES_FETCHED_SUCCESFULLY, dates));
+		} else {
+			responseEntity = ResponseEntity.status(HttpStatus.OK)
+					.body(response.getSuccessResposne(ErrorCodes.D02, ErrorMessages.WORK_LOGGED, dates));
+		}
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.GET_DATES);
+		return responseEntity;
+	}
+	
+	/**
+	 * This will fetch the jiras based on the Jira Id.
+	 *
+	 * @param IssueKey
+	 * @return
+	 * @throws TaskManagementServiceException
+	 */
+	@GetMapping(value = "/jiraDetailsByJiraId", produces = MediaType.APPLICATION_JSON_VALUE)
+	public Object getJiraDetailsByJiraId(@RequestParam(value = "issueKey") String issueKey) {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
+				MethodConstants.GET_JIRADETAILS_BY_USERID);
+		List<JiraTO> jiraDetials = new ArrayList<>();
+		ResponseEntity<Object> responseEntity = null;
+		Response response = new Response();
+		try {
+			final JiraDetailsService jiraDetailsService = jiraDetailsFactory
+					.getJiraDetailsServiceInstance("jiraDetailsServiceImpl");
+			jiraDetials = jiraDetailsService.getJiraSearchDetails(issueKey);
+			responseEntity = ResponseEntity.status(HttpStatus.OK)
+					.body(response.getSuccessResposne("S01", "Jira Details", jiraDetials));
+		} catch (final TaskManagementServiceException e) {
+			responseEntity = ResponseEntity.status(HttpStatus.OK).body(response.getErrorResponse(e));
+		}
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
+				MethodConstants.GET_JIRADETAILS_BY_USERID);
+		return responseEntity;
+	}
 }

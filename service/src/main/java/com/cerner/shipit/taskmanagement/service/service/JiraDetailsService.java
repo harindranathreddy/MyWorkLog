@@ -14,4 +14,8 @@ public interface JiraDetailsService {
 	List<JiraTO> getJiraDetailsByUserId(String UserId) throws TaskManagementServiceException;
 
 	int addWorkLog(WorkLogInfoTO workLogInfo) throws TaskManagementServiceException;
+
+	List<String> getDates(String lastLoggedDate);
+	
+	List<JiraTO> getJiraSearchDetails(String issueKey) throws TaskManagementServiceException;
 }

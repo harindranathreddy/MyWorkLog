@@ -22,6 +22,10 @@ public class ErrorCodes {
 	public static final String W02 = "W02";
 	public static final String W03 = "W03";
 	public static final String W04 = "W04";
+	
+	//Dates
+	public static final String D01 = "D01";
+	public static final String D02 = "D02";
 
 	private ErrorCodes() {
 

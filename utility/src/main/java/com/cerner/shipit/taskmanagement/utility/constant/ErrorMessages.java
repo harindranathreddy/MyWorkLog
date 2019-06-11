@@ -14,6 +14,8 @@ public class ErrorMessages {
 	public static final String WORKLOG_FAILED_TO_ADD = "Worklog failed to add.";
 	public static final String WORKLOG_FAILED_TO_ADD_DUE_TO_MALFORMEDURLEXCEPTION = "Worklog failed to add due to MalFormedURlException.";
 	public static final String WORKLOG_FAILED_TO_ADD_DUE_TO_IOEXCEPTION = "Worklog failed to add due to IOException.";
+	public static final String DATES_FETCHED_SUCCESFULLY = "Dates between last logged and current are fetched.";
+	public static final String WORK_LOGGED = "Work is logged today.";
 	
 	private ErrorMessages() {
 

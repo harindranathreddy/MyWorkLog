@@ -3,6 +3,8 @@ package com.cerner.shipit.taskmanagement.service.serviceimpl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.joda.time.Days;
+import org.joda.time.LocalDate;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -91,10 +93,9 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 			JSONArray jiraList = new JSONArray(workLogArray);
 			if (jiraList.length() > 0) {
 				JSONObject latestWorkLogObject = jiraList.getJSONObject(jiraList.length() - 1);
-				lastLoggedDate = latestWorkLogObject.getString("started").substring(0,
-						latestWorkLogObject.getString("started").indexOf("T"));
+				lastLoggedDate = latestWorkLogObject.getString("started");
 			} else {
-				lastLoggedDate = "Never Logged";
+				lastLoggedDate = "0";
 			}
 		} catch (JSONException e) {
 			logger.error(ErrorCodes.E04, ErrorMessages.FILTER_LAST_WORKLOG_DETAILS);
@@ -112,5 +113,31 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
 				MethodConstants.GET_JIRADETAILS_BY_USERID);
 		return responseStatus;
+	}
+
+	@Override
+	public List<String> getDates(String lastLoggedDate) {
+		List<String> dates = new ArrayList<>();
+		LocalDate currentDate = LocalDate.now();
+		LocalDate loggedDate = LocalDate.parse(lastLoggedDate.substring(0, lastLoggedDate.indexOf("T")));
+		if (loggedDate.isBefore(currentDate)) {
+			int days = Days.daysBetween(loggedDate, currentDate).getDays();
+			for (int i = 1; i <= days; i++) {
+				dates.add(loggedDate.plusDays(i).toString());
+			}
+		}
+		return dates;
+	}
+	
+	@Override
+	public List<JiraTO> getJiraSearchDetails(String issueKey) throws TaskManagementServiceException {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
+				MethodConstants.GET_JIRADETAILS_BY_USERID);
+		List<JiraTO> jiraDetails = new ArrayList<>();
+		String jiraDetailsfromApi = jiraApi.getJiraSearch(issueKey);
+		jiraDetails = filterJiraDetails(jiraDetailsfromApi);
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
+				MethodConstants.GET_JIRADETAILS_BY_USERID);
+		return jiraDetails;
 	}
 }
