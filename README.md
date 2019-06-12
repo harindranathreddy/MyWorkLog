@@ -9,7 +9,7 @@
 3) Associates fail to track their work.
 
 ### Features
-1) Log hours with comments for multiple Jira cards for multiple days at once.
+1) Log hours with comments for multiple Jira cards and for multiple days at once.
 2) User will get a notification at the end of day to log the work.
 3) Search Jira card with Jira Number.
 4) See the Jira cards and its details in an associates name.
