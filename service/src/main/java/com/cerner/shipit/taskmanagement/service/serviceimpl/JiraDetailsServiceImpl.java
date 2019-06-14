@@ -34,12 +34,11 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 	JiraApi jiraApi;
 
 	@Override
-	public List<JiraTO> getJiraDetailsByUserId(String UserId) throws TaskManagementServiceException {
+	public List<JiraTO> getJiraDetailsByUserId(String userId) throws TaskManagementServiceException {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
 				MethodConstants.GET_JIRADETAILS_BY_USERID);
-		List<JiraTO> jiraDetails = new ArrayList<>();
-		String jiraDetailsfromApi = jiraApi.getInProgressJiraDetailsByUserId(UserId);
-		jiraDetails = filterJiraDetails(jiraDetailsfromApi);
+		String jiraDetailsfromApi = jiraApi.getInProgressJiraDetailsByUserId(userId);
+		List<JiraTO> jiraDetails = filterJiraDetails(jiraDetailsfromApi);
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
 				MethodConstants.GET_JIRADETAILS_BY_USERID);
 		return jiraDetails;
@@ -67,8 +66,8 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 				jiraDetails.add(jira);
 			}
 		} catch (JSONException e) {
-			logger.error(ErrorCodes.E04, ErrorMessages.FILTER_JIRA_DETAILS);
-			throw new TaskManagementServiceException(ErrorCodes.E04, ErrorMessages.FILTER_JIRA_DETAILS);
+			logger.error(ErrorCodes.E04, ErrorMessages.FAILED_DURING_FILTERING_JIRA_DETAILS);
+			throw new TaskManagementServiceException(ErrorCodes.E04, ErrorMessages.FAILED_DURING_FILTERING_JIRA_DETAILS);
 		}
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.FILTER_JIRADETAILS);
 		return jiraDetails;
@@ -98,8 +97,8 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 				lastLoggedDate = "0";
 			}
 		} catch (JSONException e) {
-			logger.error(ErrorCodes.E04, ErrorMessages.FILTER_LAST_WORKLOG_DETAILS);
-			throw new TaskManagementServiceException(ErrorCodes.E04, ErrorMessages.FILTER_LAST_WORKLOG_DETAILS);
+			logger.error(ErrorCodes.E04, ErrorMessages.FAILED_DURING_FILTER_LAST_WORKLOG_DETAILS);
+			throw new TaskManagementServiceException(ErrorCodes.E04, ErrorMessages.FAILED_DURING_FILTER_LAST_WORKLOG_DETAILS);
 		}
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.FILTER_WORKLOGS);
 		return lastLoggedDate;
@@ -119,7 +118,7 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 	public List<String> getDates(String lastLoggedDate) {
 		List<String> dates = new ArrayList<>();
 		LocalDate currentDate = LocalDate.now();
-		LocalDate loggedDate = LocalDate.parse(lastLoggedDate.substring(0, lastLoggedDate.indexOf("T")));
+		LocalDate loggedDate = LocalDate.parse(lastLoggedDate.substring(0, lastLoggedDate.indexOf('T')));
 		if (loggedDate.isBefore(currentDate)) {
 			int days = Days.daysBetween(loggedDate, currentDate).getDays();
 			for (int i = 1; i <= days; i++) {
@@ -132,12 +131,11 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 	@Override
 	public List<JiraTO> getJiraSearchDetails(String issueKey) throws TaskManagementServiceException {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
-				MethodConstants.GET_JIRADETAILS_BY_USERID);
-		List<JiraTO> jiraDetails = new ArrayList<>();
-		String jiraDetailsfromApi = jiraApi.getJiraSearch(issueKey);
-		jiraDetails = filterJiraDetails(jiraDetailsfromApi);
+				MethodConstants.GET_JIRASEARCHDETAILS);
+		String jiraDetailsfromApi = jiraApi.getJiraSearchDetails(issueKey);
+		List<JiraTO> jiraDetails = filterJiraDetails(jiraDetailsfromApi);
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
-				MethodConstants.GET_JIRADETAILS_BY_USERID);
+				MethodConstants.GET_JIRASEARCHDETAILS);
 		return jiraDetails;
 	}
 }

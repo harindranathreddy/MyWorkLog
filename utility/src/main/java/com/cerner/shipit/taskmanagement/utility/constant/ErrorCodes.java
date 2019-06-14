@@ -15,7 +15,7 @@ public class ErrorCodes {
 	public static final String L02 = "L02";
 
 	// Jira Details
-	public static final String J01 = "J01";
+	public static final String J01 = "J01"; // Jira Details fetched succesfully
 	
 	// Work Log
 	public static final String W01 = "W01";
@@ -26,7 +26,14 @@ public class ErrorCodes {
 	//Dates
 	public static final String D01 = "D01";
 	public static final String D02 = "D02";
-
+	
+	//Jira Search
+	public static final String JS01 = "JS01";
+	public static final String JS02 = "JS02";
+	public static final String JS03 = "JS03";
+	public static final String JS04 = "JS04"; // Jira Details fetched succesfully.
+	public static final String JS05 = "JS05";
+	
 	private ErrorCodes() {
 
 	}

@@ -34,13 +34,13 @@ public class JiraApi {
 
 	Logger logger = LoggerFactory.getLogger(JiraApi.class);
 
-	public String getInProgressJiraDetailsByUserId(String UserId) throws TaskManagementServiceException {
+	public String getInProgressJiraDetailsByUserId(String userId) throws TaskManagementServiceException {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
 				MethodConstants.GET_INPROGRESS_JIRADETAILS_BY_USERID);
 		String jiraDetails;
 		HttpURLConnection connection = null;
 		try {
-			URL jiraURL = new URL("https://jira2.cerner.com/rest/api/2/search?jql=assignee=%22" + UserId
+			URL jiraURL = new URL("https://jira2.cerner.com/rest/api/2/search?jql=assignee=%22" + userId
 					+ "%22+AND+status%20in%20(\"IN%20PROGRESS\",\"IN%20REVIEW\")");
 			connection = (HttpURLConnection) jiraURL.openConnection();
 			connection.setRequestMethod("GET");
@@ -48,14 +48,14 @@ public class JiraApi {
 			Reader in = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
 			jiraDetails = IOUtils.toString(in);
 		} catch (final UnsupportedEncodingException e) {
-			logger.error(ErrorCodes.E01, ErrorMessages.JIRA_DETAILS);
-			throw new TaskManagementServiceException(ErrorCodes.E01, ErrorMessages.JIRA_DETAILS);
+			logger.error(ErrorCodes.E01, ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS);
+			throw new TaskManagementServiceException(ErrorCodes.E01, ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS);
 		} catch (final ClientProtocolException e) {
-			logger.error(ErrorCodes.E02, ErrorMessages.JIRA_DETAILS);
-			throw new TaskManagementServiceException(ErrorCodes.E02, ErrorMessages.JIRA_DETAILS);
+			logger.error(ErrorCodes.E02, ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS);
+			throw new TaskManagementServiceException(ErrorCodes.E02, ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS);
 		} catch (final IOException e) {
-			logger.error(ErrorCodes.E03, ErrorMessages.JIRA_DETAILS);
-			throw new TaskManagementServiceException(ErrorCodes.E03, ErrorMessages.JIRA_DETAILS);
+			logger.error(ErrorCodes.E03, ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS);
+			throw new TaskManagementServiceException(ErrorCodes.E03, ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS);
 		} finally {
 			if (connection != null) {
 				connection.disconnect();
@@ -80,14 +80,14 @@ public class JiraApi {
 			Reader in = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
 			jiraDetails = IOUtils.toString(in);
 		} catch (final UnsupportedEncodingException e) {
-			logger.error(ErrorCodes.E01, ErrorMessages.WORKLOG_DETAILS);
-			throw new TaskManagementServiceException(ErrorCodes.E01, ErrorMessages.WORKLOG_DETAILS);
+			logger.error(ErrorCodes.E01, ErrorMessages.FAILED_TO_FETCH_WORKLOG_DETAILS);
+			throw new TaskManagementServiceException(ErrorCodes.E01, ErrorMessages.FAILED_TO_FETCH_WORKLOG_DETAILS);
 		} catch (final ClientProtocolException e) {
-			logger.error(ErrorCodes.E02, ErrorMessages.WORKLOG_DETAILS);
-			throw new TaskManagementServiceException(ErrorCodes.E02, ErrorMessages.WORKLOG_DETAILS);
+			logger.error(ErrorCodes.E02, ErrorMessages.FAILED_TO_FETCH_WORKLOG_DETAILS);
+			throw new TaskManagementServiceException(ErrorCodes.E02, ErrorMessages.FAILED_TO_FETCH_WORKLOG_DETAILS);
 		} catch (final IOException e) {
-			logger.error(ErrorCodes.E03, ErrorMessages.WORKLOG_DETAILS);
-			throw new TaskManagementServiceException(ErrorCodes.E03, ErrorMessages.WORKLOG_DETAILS);
+			logger.error(ErrorCodes.E03, ErrorMessages.FAILED_TO_FETCH_WORKLOG_DETAILS);
+			throw new TaskManagementServiceException(ErrorCodes.E03, ErrorMessages.FAILED_TO_FETCH_WORKLOG_DETAILS);
 		} finally {
 			if (connection != null) {
 				connection.disconnect();
@@ -120,8 +120,8 @@ public class JiraApi {
 				connection.setRequestProperty("Authorization", "Basic " + auth);
 				connection.setDoOutput(true);
 				DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
-				ObjectMapper Obj = new ObjectMapper();
-				String jsonStr = Obj.writeValueAsString(temp);
+				ObjectMapper obj = new ObjectMapper();
+				String jsonStr = obj.writeValueAsString(temp);
 				wr.writeBytes(jsonStr);
 				wr.flush();
 				wr.close();
@@ -167,19 +167,15 @@ public class JiraApi {
 			if (responseCode != 200) {
 				throw new TaskManagementServiceException(ErrorCodes.E05, ErrorMessages.FAILED_TO_AUTHENTICATE_USER);
 			}
-		} catch (final UnsupportedEncodingException e) {
-			throw new TaskManagementServiceException(ErrorCodes.E05, ErrorMessages.FAILED_TO_AUTHENTICATE_USER);
-		} catch (final ClientProtocolException e) {
-			throw new TaskManagementServiceException(ErrorCodes.E05, ErrorMessages.FAILED_TO_AUTHENTICATE_USER);
 		} catch (final IOException e) {
 			throw new TaskManagementServiceException(ErrorCodes.E05, ErrorMessages.FAILED_TO_AUTHENTICATE_USER);
 		}
 		return responseCode;
 	}
-	
-	public String getJiraSearch(String issueKey) throws TaskManagementServiceException{
+
+	public String getJiraSearchDetails(String issueKey) throws TaskManagementServiceException {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
-				MethodConstants.GET_JIRADETAILS_BY_USERID);
+				MethodConstants.GET_JIRASEARCHDETAILS);
 		String jiraDetails;
 		try {
 			URL jiraURL = new URL("https://jira2.cerner.com/rest/api/2/search?jql=issue=%22" + issueKey + "%22");
@@ -189,18 +185,18 @@ public class JiraApi {
 			Reader in = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
 			jiraDetails = IOUtils.toString(in);
 		} catch (final UnsupportedEncodingException e) {
-			logger.error(ErrorCodes.E01, ErrorMessages.JIRA_DETAILS);
-			throw new TaskManagementServiceException(ErrorCodes.E01, ErrorMessages.JIRA_DETAILS);
+			logger.error(ErrorCodes.JS01, ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS);
+			throw new TaskManagementServiceException(ErrorCodes.JS01, ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS);
 		} catch (final ClientProtocolException e) {
-			logger.error(ErrorCodes.E02, ErrorMessages.JIRA_DETAILS);
-			throw new TaskManagementServiceException(ErrorCodes.E02, ErrorMessages.JIRA_DETAILS);
+			logger.error(ErrorCodes.JS02, ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS);
+			throw new TaskManagementServiceException(ErrorCodes.JS02, ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS);
 		} catch (final IOException e) {
-			logger.error(ErrorCodes.E03, ErrorMessages.JIRA_DETAILS);
-			throw new TaskManagementServiceException(ErrorCodes.E03, ErrorMessages.JIRA_DETAILS);
+			logger.error(ErrorCodes.JS03, ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS);
+			throw new TaskManagementServiceException(ErrorCodes.JS03, ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS);
 		}
 
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
-				MethodConstants.GET_JIRADETAILS_BY_USERID);
+				MethodConstants.GET_JIRASEARCHDETAILS);
 		return jiraDetails;
 
 	}

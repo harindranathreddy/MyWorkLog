@@ -120,7 +120,7 @@ public class JiraDetailsController {
 	@GetMapping(value = "/jiraDetailsByJiraId", produces = MediaType.APPLICATION_JSON_VALUE)
 	public Object getJiraDetailsByJiraId(@RequestParam(value = "issueKey") String issueKey) {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
-				MethodConstants.GET_JIRADETAILS_BY_USERID);
+				MethodConstants.GET_JIRADETAILS_BY_JIRAID);
 		List<JiraTO> jiraDetials = new ArrayList<>();
 		ResponseEntity<Object> responseEntity = null;
 		Response response = new Response();
@@ -128,13 +128,18 @@ public class JiraDetailsController {
 			final JiraDetailsService jiraDetailsService = jiraDetailsFactory
 					.getJiraDetailsServiceInstance("jiraDetailsServiceImpl");
 			jiraDetials = jiraDetailsService.getJiraSearchDetails(issueKey);
-			responseEntity = ResponseEntity.status(HttpStatus.OK)
-					.body(response.getSuccessResposne("S01", "Jira Details", jiraDetials));
+			if (!jiraDetials.isEmpty()) {
+				responseEntity = ResponseEntity.status(HttpStatus.OK).body(response.getSuccessResposne(ErrorCodes.JS04,
+						ErrorMessages.JIRA_DETAIALS_FETCHED_SUCCESFULLY, jiraDetials));
+			} else {
+				responseEntity = ResponseEntity.status(HttpStatus.OK)
+						.body(response.getSuccessResposne(ErrorCodes.JS05, ErrorMessages.JIRA_NOT_AVAILABLE, null));
+			}
 		} catch (final TaskManagementServiceException e) {
-			responseEntity = ResponseEntity.status(HttpStatus.OK).body(response.getErrorResponse(e));
+			responseEntity = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response.getErrorResponse(e));
 		}
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
-				MethodConstants.GET_JIRADETAILS_BY_USERID);
+				MethodConstants.GET_JIRADETAILS_BY_JIRAID);
 		return responseEntity;
 	}
 }

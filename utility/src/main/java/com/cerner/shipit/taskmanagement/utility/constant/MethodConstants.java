@@ -13,6 +13,8 @@ public class MethodConstants {
 	public static final String ADD_WORK_LOG = "addWorkLog";
 	public static final String GET_DATES = "getDates";
 	public static final String GET_INPROGRESS_JIRADETAILS_BY_USERID = "getInProgressJiraDetailsByUserId";
+	public static final String GET_JIRADETAILS_BY_JIRAID = "getJiraDetailsByJiraId";
+	public static final String GET_JIRASEARCHDETAILS = "getJiraSearchDetails";
 
 	private MethodConstants() {
 

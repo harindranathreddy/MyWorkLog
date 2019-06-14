@@ -27,7 +27,7 @@ public class JiraAuthentactionFactory {
 			jiraAuthentactionServiceInstance = jiraAuthenticationService;
 		}
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
-				MethodConstants.GET_JIRADETAILS_SERVICE_INSTANCE);
+				MethodConstants.GET_JIRAAUTHENTACTION_SERVICE_INSTANCE);
 		return jiraAuthentactionServiceInstance;
 
 	}
