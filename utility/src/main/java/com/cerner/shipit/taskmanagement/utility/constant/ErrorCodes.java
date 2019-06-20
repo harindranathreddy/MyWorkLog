@@ -22,6 +22,7 @@ public class ErrorCodes {
 	public static final String W02 = "W02";
 	public static final String W03 = "W03";
 	public static final String W04 = "W04";
+	public static final String W05 = "W05"; //403 Forbidden error
 	
 	//Dates
 	public static final String D01 = "D01";

@@ -11,6 +11,7 @@ import com.cerner.shipit.taskmanagement.service.jiraapi.JiraApi;
 import com.cerner.shipit.taskmanagement.service.service.JiraAuthentactionService;
 import com.cerner.shipit.taskmanagement.utility.constant.GeneralConstants;
 import com.cerner.shipit.taskmanagement.utility.constant.MethodConstants;
+import com.cerner.shipit.taskmanagement.utility.tos.LoginResponseTO;
 
 @Service
 @Component("JiraAuthentactionServiceImpl")
@@ -22,11 +23,11 @@ public class JiraAuthentactionServiceImpl implements JiraAuthentactionService {
 	JiraApi jiraApi;
 
 	@Override
-	public int authenticateUser(String userName, String password) throws TaskManagementServiceException {
+	public LoginResponseTO authenticateUser(String userName, String password) throws TaskManagementServiceException {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START, MethodConstants.AUTHENTICATE_USER);
-		int responseStatus = jiraApi.authenticateUser(userName, password);
+		LoginResponseTO response = jiraApi.authenticateUser(userName, password);
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.AUTHENTICATE_USER);
-		return responseStatus;
+		return response;
 	}
 
 }

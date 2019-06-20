@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import com.cerner.shipit.taskmanagement.service.service.JiraAuthentactionService;
+import com.cerner.shipit.taskmanagement.service.serviceimpl.JiraCookieBasedAuthentactionServiceImpl;
 import com.cerner.shipit.taskmanagement.utility.constant.GeneralConstants;
 import com.cerner.shipit.taskmanagement.utility.constant.MethodConstants;
 
@@ -19,12 +20,18 @@ public class JiraAuthentactionFactory {
 	@Qualifier("JiraAuthentactionServiceImpl")
 	private JiraAuthentactionService jiraAuthenticationService;
 
+	@Autowired
+	@Qualifier("JiraCookieBasedAuthentactionServiceImpl")
+	private JiraCookieBasedAuthentactionServiceImpl jiraCookieBasedAuthentactionServiceImpl;
+
 	public JiraAuthentactionService getJiraAuthentactionServiceInstance(String className) {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
 				MethodConstants.GET_JIRAAUTHENTACTION_SERVICE_INSTANCE);
 		JiraAuthentactionService jiraAuthentactionServiceInstance = null;
 		if ("JiraAuthentactionServiceImpl".equalsIgnoreCase(className)) {
 			jiraAuthentactionServiceInstance = jiraAuthenticationService;
+		} else if ("JiraCookieBasedAuthentactionServiceImpl".equalsIgnoreCase(className)) {
+			jiraAuthentactionServiceInstance = jiraCookieBasedAuthentactionServiceImpl;
 		}
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
 				MethodConstants.GET_JIRAAUTHENTACTION_SERVICE_INSTANCE);

@@ -3,6 +3,7 @@ package com.cerner.shipit.taskmanagement.service.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +47,7 @@ public class JiraDetailsController {
 	 * @throws TaskManagementServiceException
 	 */
 	@GetMapping(value = "/jiraDetailsByUserId", produces = MediaType.APPLICATION_JSON_VALUE)
-	public Object getJiraDetailsByUserId(@RequestParam(value = "userId") String userId) {
+	public ResponseEntity<Object> getJiraDetailsByUserId(@RequestParam(value = "userId") String userId) {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
 				MethodConstants.GET_JIRADETAILS_BY_USERID);
 		List<JiraTO> jiraDetilas = new ArrayList<>();
@@ -68,7 +69,7 @@ public class JiraDetailsController {
 
 	// Logging the work
 	@PostMapping(value = "/addWorkLog", produces = MediaType.APPLICATION_JSON_VALUE)
-	public Object addWorkLog(@RequestBody WorkLogInfoTO workLogInfoTo) {
+	public ResponseEntity<Object> addWorkLog(@RequestBody WorkLogInfoTO workLogInfoTo) {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START, MethodConstants.ADD_WORK_LOG);
 		ResponseEntity<Object> responseEntity = null;
 		Response response = new Response();
@@ -76,6 +77,7 @@ public class JiraDetailsController {
 		try {
 			final JiraDetailsService jiraDetailsService = jiraDetailsFactory
 					.getJiraDetailsServiceInstance("jiraDetailsServiceImpl");
+			workLogInfoTo.setPassword(new String(Base64.decodeBase64(workLogInfoTo.getPassword().getBytes())));
 			responseStatus = jiraDetailsService.addWorkLog(workLogInfoTo);
 			responseEntity = ResponseEntity.status(HttpStatus.OK).body(response.getSuccessResposne(ErrorCodes.W01,
 					ErrorMessages.WORKLOG_ADDED_SUCCESFULLY, responseStatus));
@@ -87,7 +89,7 @@ public class JiraDetailsController {
 	}
 
 	@GetMapping(value = "/getDates", produces = MediaType.APPLICATION_JSON_VALUE)
-	public Object getDates(@RequestParam(value = "lastLoggedDate") String lastLoggedDate) {
+	public ResponseEntity<Object> getDates(@RequestParam(value = "lastLoggedDate") String lastLoggedDate) {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START, MethodConstants.GET_DATES);
 		List<String> dates = new ArrayList<>();
 		ResponseEntity<Object> responseEntity = null;
@@ -118,7 +120,7 @@ public class JiraDetailsController {
 	 * @throws TaskManagementServiceException
 	 */
 	@GetMapping(value = "/jiraDetailsByJiraId", produces = MediaType.APPLICATION_JSON_VALUE)
-	public Object getJiraDetailsByJiraId(@RequestParam(value = "issueKey") String issueKey) {
+	public ResponseEntity<Object> getJiraDetailsByJiraId(@RequestParam(value = "issueKey") String issueKey) {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
 				MethodConstants.GET_JIRADETAILS_BY_JIRAID);
 		List<JiraTO> jiraDetials = new ArrayList<>();

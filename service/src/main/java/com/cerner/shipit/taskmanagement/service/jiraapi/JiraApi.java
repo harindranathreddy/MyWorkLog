@@ -25,6 +25,8 @@ import com.cerner.shipit.taskmanagement.utility.constant.ErrorCodes;
 import com.cerner.shipit.taskmanagement.utility.constant.ErrorMessages;
 import com.cerner.shipit.taskmanagement.utility.constant.GeneralConstants;
 import com.cerner.shipit.taskmanagement.utility.constant.MethodConstants;
+import com.cerner.shipit.taskmanagement.utility.tos.AuthTO;
+import com.cerner.shipit.taskmanagement.utility.tos.LoginResponseTO;
 import com.cerner.shipit.taskmanagement.utility.tos.WorkLogDetailsTO;
 import com.cerner.shipit.taskmanagement.utility.tos.WorkLogInfoTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -128,6 +130,9 @@ public class JiraApi {
 				connection.connect();
 				if (connection.getResponseCode() == 201) {
 					response = connection.getResponseCode();
+				} else if (connection.getResponseCode() == 403) {
+					throw new TaskManagementServiceException(ErrorCodes.W05,
+							ErrorMessages.WORKLOG_FAILED_TO_ADD_WITH_FORBIDDEN_ERROR);
 				} else {
 					throw new TaskManagementServiceException(ErrorCodes.W02, ErrorMessages.WORKLOG_FAILED_TO_ADD);
 				}
@@ -148,9 +153,9 @@ public class JiraApi {
 
 	}
 
-	public int authenticateUser(String userName, String password) throws TaskManagementServiceException {
+	public LoginResponseTO authenticateUser(String userName, String password) throws TaskManagementServiceException {
 		URL jiraURL;
-		int responseCode = 0;
+		LoginResponseTO response = new LoginResponseTO();
 		try {
 			jiraURL = new URL("https://jira2.cerner.com");
 			HttpURLConnection connection = (HttpURLConnection) jiraURL.openConnection();
@@ -163,14 +168,15 @@ public class JiraApi {
 			String basicAuth = "Basic " + new String(new Base64().encode(userCredentials.getBytes()));
 			connection.setRequestProperty("Authorization", basicAuth);
 			connection.connect();
-			responseCode = connection.getResponseCode();
-			if (responseCode != 200) {
+			if (connection.getResponseCode() != 200) {
 				throw new TaskManagementServiceException(ErrorCodes.E05, ErrorMessages.FAILED_TO_AUTHENTICATE_USER);
+			} else {
+				response.setStatus(connection.getResponseCode());
 			}
 		} catch (final IOException e) {
 			throw new TaskManagementServiceException(ErrorCodes.E05, ErrorMessages.FAILED_TO_AUTHENTICATE_USER);
 		}
-		return responseCode;
+		return response;
 	}
 
 	public String getJiraSearchDetails(String issueKey) throws TaskManagementServiceException {
@@ -199,5 +205,42 @@ public class JiraApi {
 				MethodConstants.GET_JIRASEARCHDETAILS);
 		return jiraDetails;
 
+	}
+
+	public LoginResponseTO authenticateUserforCookies(String userName, String password)
+			throws TaskManagementServiceException {
+		URL jiraURL;
+		int responseCode = 0;
+		LoginResponseTO loginresponseTO = new LoginResponseTO();
+		AuthTO authTO = new AuthTO();
+		try {
+			jiraURL = new URL("https://jira2.cerner.com/rest/auth/1/session");
+			HttpURLConnection connection = (HttpURLConnection) jiraURL.openConnection();
+			connection.setRequestMethod("POST");
+			connection.setRequestProperty("Accept", "*/*");
+			connection.setRequestProperty("Content-Type", "application/json");
+			connection.setDoOutput(true);
+			connection.setDoInput(true);
+			authTO.setUsername(userName);
+			authTO.setPassword(password);
+			DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
+			ObjectMapper obj = new ObjectMapper();
+			String jsonStr = obj.writeValueAsString(authTO);
+			wr.writeBytes(jsonStr);
+			wr.flush();
+			wr.close();
+			connection.connect();
+			responseCode = connection.getResponseCode();
+			if (responseCode != 200) {
+				throw new TaskManagementServiceException(ErrorCodes.E05, ErrorMessages.FAILED_TO_AUTHENTICATE_USER);
+			} else {
+				loginresponseTO.setStatus(responseCode);
+				loginresponseTO.setMessage(connection.getResponseMessage());
+				loginresponseTO.setHeaders(connection.getHeaderFields());
+			}
+		} catch (final IOException e) {
+			throw new TaskManagementServiceException(ErrorCodes.E05, ErrorMessages.FAILED_TO_AUTHENTICATE_USER);
+		}
+		return loginresponseTO;
 	}
 }

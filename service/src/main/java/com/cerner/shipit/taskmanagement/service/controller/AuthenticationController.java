@@ -1,8 +1,12 @@
 package com.cerner.shipit.taskmanagement.service.controller;
 
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +24,7 @@ import com.cerner.shipit.taskmanagement.utility.constant.ErrorMessages;
 import com.cerner.shipit.taskmanagement.utility.constant.GeneralConstants;
 import com.cerner.shipit.taskmanagement.utility.constant.MethodConstants;
 import com.cerner.shipit.taskmanagement.utility.response.Response;
+import com.cerner.shipit.taskmanagement.utility.tos.LoginResponseTO;
 
 @CrossOrigin
 @RestController
@@ -38,17 +43,20 @@ public class AuthenticationController {
 	 * @param password
 	 */
 	@GetMapping(value = "/authUser", produces = MediaType.APPLICATION_JSON_VALUE)
-	public Object authenticateUser(@RequestParam(value = "userName") String userName,
-			@RequestParam(value = "password") String password) {
+	public ResponseEntity<Object> authenticateUser(@RequestParam(value = "userName") String userName,
+			@RequestParam(value = "password") String password, HttpServletResponse resp) {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START, MethodConstants.AUTHENTICATE_USER);
 		ResponseEntity<Object> responseEntity = null;
 		Response response = new Response();
 		try {
 			final JiraAuthentactionService jiraAuthenticateService = jiraAuthentactionFactory
-					.getJiraAuthentactionServiceInstance("JiraAuthentactionServiceImpl");
-			int responseStatus = jiraAuthenticateService.authenticateUser(userName, password);
-			if (responseStatus == 200) {
-				responseEntity = ResponseEntity.status(HttpStatus.OK)
+					.getJiraAuthentactionServiceInstance("JiraCookieBasedAuthentactionServiceImpl");
+			LoginResponseTO responseObject = jiraAuthenticateService.authenticateUser(userName,
+					new String(Base64.decodeBase64(password.getBytes())));
+			if ((responseObject != null) && (responseObject.getStatus() == 200)) {
+				HttpHeaders hpptHeaders = new HttpHeaders();
+				hpptHeaders.addAll("Set-Cookie", responseObject.getHeaders().get("Set-Cookie"));
+				responseEntity = ResponseEntity.status(HttpStatus.OK).headers(hpptHeaders)
 						.body(response.getSuccessResposne(ErrorCodes.L01, ErrorMessages.LOGIN_SUCCESSFUL, null));
 			} else {
 				responseEntity = ResponseEntity.status(HttpStatus.BAD_REQUEST)
