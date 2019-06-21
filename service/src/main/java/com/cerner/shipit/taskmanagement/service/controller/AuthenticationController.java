@@ -57,7 +57,8 @@ public class AuthenticationController {
 				HttpHeaders hpptHeaders = new HttpHeaders();
 				hpptHeaders.addAll("Set-Cookie", responseObject.getHeaders().get("Set-Cookie"));
 				responseEntity = ResponseEntity.status(HttpStatus.OK).headers(hpptHeaders)
-						.body(response.getSuccessResposne(ErrorCodes.L01, ErrorMessages.LOGIN_SUCCESSFUL, null));
+						.body(response.getSuccessResposne(ErrorCodes.L01, ErrorMessages.LOGIN_SUCCESSFUL,
+								responseObject.getUserTO()));
 			} else {
 				responseEntity = ResponseEntity.status(HttpStatus.BAD_REQUEST)
 						.body(response.getErrorResponse(ErrorCodes.L02, ErrorMessages.LOGIN_FAILED));

@@ -18,6 +18,9 @@ public class ErrorMessages {
 	public static final String WORK_LOGGED = "Work is logged today.";
 	public static final String JIRA_NOT_AVAILABLE = "Jira is not available or don't have permission to add.";
 	public static final String WORKLOG_FAILED_TO_ADD_WITH_FORBIDDEN_ERROR = "Server responded with Forbidden Error. Plase logout and login to jira2.cerner.com to resolve the forbidden error and try after that.";
+	public static final String FAILED_TO_FETCH_USER_DETAILS = "Failed to fetch user details";
+	public static final String FAILED_DURING_FILTERING_USER_DETAILS = "Failed during filtering user details.";
+	public static final String WORK_LOGGED_TODAY_OR_NEVER = "Work is either logged today are never logged.";
 
 	private ErrorMessages() {
 

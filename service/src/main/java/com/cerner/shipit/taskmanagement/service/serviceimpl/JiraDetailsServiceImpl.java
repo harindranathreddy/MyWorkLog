@@ -55,19 +55,23 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 				JSONObject jiraObject = (JSONObject) jiraList.get(i);
 				JiraTO jira = new JiraTO();
 				jira.setId(jiraObject.getString("key"));
+				jira.setJiraLink("https://jira2.cerner.com/browse/" + jiraObject.getString("key"));
 				JSONObject fields = jiraObject.getJSONObject("fields");
 				jira.setDescription(fields.getString("description"));
 				jira.setSummery(fields.getString("summary"));
 				JSONObject status = fields.getJSONObject("status");
 				jira.setStatus(status.getString("name"));
+				jira.setStatusIcon(status.getString("iconUrl"));
 				JSONObject issueType = fields.getJSONObject("issuetype");
 				jira.setType(issueType.getString("name"));
+				jira.setIssueIcon(issueType.getString("iconUrl"));
 				jira.setLastLoggedDate(getJiraLastWorkLogDate(jiraObject.getString("key")));
 				jiraDetails.add(jira);
 			}
 		} catch (JSONException e) {
 			logger.error(ErrorCodes.E04, ErrorMessages.FAILED_DURING_FILTERING_JIRA_DETAILS);
-			throw new TaskManagementServiceException(ErrorCodes.E04, ErrorMessages.FAILED_DURING_FILTERING_JIRA_DETAILS);
+			throw new TaskManagementServiceException(ErrorCodes.E04,
+					ErrorMessages.FAILED_DURING_FILTERING_JIRA_DETAILS);
 		}
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.FILTER_JIRADETAILS);
 		return jiraDetails;
@@ -98,7 +102,8 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 			}
 		} catch (JSONException e) {
 			logger.error(ErrorCodes.E04, ErrorMessages.FAILED_DURING_FILTER_LAST_WORKLOG_DETAILS);
-			throw new TaskManagementServiceException(ErrorCodes.E04, ErrorMessages.FAILED_DURING_FILTER_LAST_WORKLOG_DETAILS);
+			throw new TaskManagementServiceException(ErrorCodes.E04,
+					ErrorMessages.FAILED_DURING_FILTER_LAST_WORKLOG_DETAILS);
 		}
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.FILTER_WORKLOGS);
 		return lastLoggedDate;

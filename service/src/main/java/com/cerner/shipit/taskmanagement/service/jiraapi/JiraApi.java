@@ -12,6 +12,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
@@ -43,7 +44,7 @@ public class JiraApi {
 		HttpURLConnection connection = null;
 		try {
 			URL jiraURL = new URL("https://jira2.cerner.com/rest/api/2/search?jql=assignee=%22" + userId
-					+ "%22+AND+status%20in%20(\"IN%20PROGRESS\",\"IN%20REVIEW\")");
+					+ "%22+AND+status%20not%20in%20(\"CLOSED\")");
 			connection = (HttpURLConnection) jiraURL.openConnection();
 			connection.setRequestMethod("GET");
 			connection.connect();
@@ -104,6 +105,7 @@ public class JiraApi {
 	public int addWorkLog(WorkLogInfoTO workLogInfo) throws TaskManagementServiceException {
 		HttpURLConnection connection = null;
 		int response = 0;
+		String failedLogs = ErrorMessages.WORKLOG_FAILED_TO_ADD;
 		try {
 			String auth = new String(
 					Base64.encodeBase64((workLogInfo.getUserName() + ":" + workLogInfo.getPassword()).getBytes()));
@@ -134,8 +136,11 @@ public class JiraApi {
 					throw new TaskManagementServiceException(ErrorCodes.W05,
 							ErrorMessages.WORKLOG_FAILED_TO_ADD_WITH_FORBIDDEN_ERROR);
 				} else {
-					throw new TaskManagementServiceException(ErrorCodes.W02, ErrorMessages.WORKLOG_FAILED_TO_ADD);
+					failedLogs += " " + temp.getId();
 				}
+			}
+			if (!failedLogs.equalsIgnoreCase(ErrorMessages.WORKLOG_FAILED_TO_ADD)) {
+				throw new TaskManagementServiceException(ErrorCodes.W02, failedLogs);
 			}
 		} catch (MalformedURLException e) {
 			throw new TaskManagementServiceException(ErrorCodes.W03,
@@ -242,5 +247,45 @@ public class JiraApi {
 			throw new TaskManagementServiceException(ErrorCodes.E05, ErrorMessages.FAILED_TO_AUTHENTICATE_USER);
 		}
 		return loginresponseTO;
+	}
+
+	public String getUserDetailsFromJira(String userName, Map<String, List<String>> headers)
+			throws TaskManagementServiceException {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
+				MethodConstants.GET_USER_DETAILS_FROM_JIRA);
+		String userDetails = null;
+		HttpURLConnection connection = null;
+		try {
+			URL jiraURL = new URL("https://jira2.cerner.com/rest/api/2/user?username=" + userName);
+			connection = (HttpURLConnection) jiraURL.openConnection();
+			connection.setRequestMethod("GET");
+			connection.setRequestProperty("X-AUSERNAME", userName);
+			connection.setRequestProperty("Cookie", headers.get("Set-Cookie").toString());
+			connection.connect();
+			if (connection.getResponseCode() == 200) {
+				Reader in = new BufferedReader(
+						new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+				userDetails = IOUtils.toString(in);
+			} else if (connection.getResponseCode() == 401) {
+				userDetails = null;
+			}
+		} catch (final UnsupportedEncodingException e) {
+			logger.error(ErrorCodes.U01, ErrorMessages.FAILED_TO_FETCH_USER_DETAILS);
+			throw new TaskManagementServiceException(ErrorCodes.U01, ErrorMessages.FAILED_TO_FETCH_USER_DETAILS);
+		} catch (final ClientProtocolException e) {
+			logger.error(ErrorCodes.U02, ErrorMessages.FAILED_TO_FETCH_USER_DETAILS);
+			throw new TaskManagementServiceException(ErrorCodes.U02, ErrorMessages.FAILED_TO_FETCH_USER_DETAILS);
+		} catch (final IOException e) {
+			logger.error(ErrorCodes.U03, ErrorMessages.FAILED_TO_FETCH_USER_DETAILS);
+			throw new TaskManagementServiceException(ErrorCodes.U03, ErrorMessages.FAILED_TO_FETCH_USER_DETAILS);
+		} finally {
+			if (connection != null) {
+				connection.disconnect();
+			}
+		}
+
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
+				MethodConstants.GET_USER_DETAILS_FROM_JIRA);
+		return userDetails;
 	}
 }

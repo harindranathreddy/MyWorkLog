@@ -106,7 +106,7 @@ public class JiraDetailsController {
 					.body(response.getSuccessResposne(ErrorCodes.D01, ErrorMessages.DATES_FETCHED_SUCCESFULLY, dates));
 		} else {
 			responseEntity = ResponseEntity.status(HttpStatus.OK)
-					.body(response.getSuccessResposne(ErrorCodes.D02, ErrorMessages.WORK_LOGGED, dates));
+					.body(response.getSuccessResposne(ErrorCodes.D02, ErrorMessages.WORK_LOGGED_TODAY_OR_NEVER, dates));
 		}
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.GET_DATES);
 		return responseEntity;

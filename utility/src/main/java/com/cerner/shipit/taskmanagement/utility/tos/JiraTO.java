@@ -8,6 +8,9 @@ public class JiraTO {
 	private String Status;
 	private String Type;
 	private String lastLoggedDate;
+	private String jiraLink;
+	private String issueIcon;
+	private String statusIcon;
 
 	public String getId() {
 		return Id;
@@ -56,5 +59,31 @@ public class JiraTO {
 	public void setLastLoggedDate(String lastLoggedDate) {
 		this.lastLoggedDate = lastLoggedDate;
 	}
+
+	public String getJiraLink() {
+		return jiraLink;
+	}
+
+	public void setJiraLink(String jiraLink) {
+		this.jiraLink = jiraLink;
+	}
+
+	public String getIssueIcon() {
+		return issueIcon;
+	}
+
+	public void setIssueIcon(String issueIcon) {
+		this.issueIcon = issueIcon;
+	}
+
+	public String getStatusIcon() {
+		return statusIcon;
+	}
+
+	public void setStatusIcon(String statusIcon) {
+		this.statusIcon = statusIcon;
+	}
+	
+	
 
 }

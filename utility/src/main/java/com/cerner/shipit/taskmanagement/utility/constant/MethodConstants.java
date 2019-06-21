@@ -15,6 +15,7 @@ public class MethodConstants {
 	public static final String GET_INPROGRESS_JIRADETAILS_BY_USERID = "getInProgressJiraDetailsByUserId";
 	public static final String GET_JIRADETAILS_BY_JIRAID = "getJiraDetailsByJiraId";
 	public static final String GET_JIRASEARCHDETAILS = "getJiraSearchDetails";
+	public static final String GET_USER_DETAILS_FROM_JIRA = "getUserDetailsFromJira";
 
 	private MethodConstants() {
 

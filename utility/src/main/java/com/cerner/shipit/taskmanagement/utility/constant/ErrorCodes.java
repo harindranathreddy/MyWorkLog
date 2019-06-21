@@ -35,6 +35,13 @@ public class ErrorCodes {
 	public static final String JS04 = "JS04"; // Jira Details fetched succesfully.
 	public static final String JS05 = "JS05";
 	
+	
+	//User Details
+	public static final String U01 = "U01";
+	public static final String U02 = "U02";
+	public static final String U03 = "U03";
+	public static final String U04 = "U04";
+	
 	private ErrorCodes() {
 
 	}

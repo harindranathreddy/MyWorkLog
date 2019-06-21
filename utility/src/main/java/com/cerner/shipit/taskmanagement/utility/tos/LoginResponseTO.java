@@ -7,6 +7,7 @@ public class LoginResponseTO {
 	int status;
 	String message;
 	Map<String, List<String>> headers;
+	UserTO userTO;
 
 	public int getStatus() {
 		return status;
@@ -32,4 +33,13 @@ public class LoginResponseTO {
 		this.headers = headers;
 	}
 
+	public UserTO getUserTO() {
+		return userTO;
+	}
+
+	public void setUserTO(UserTO userTO) {
+		this.userTO = userTO;
+	}
+
+	
 }
