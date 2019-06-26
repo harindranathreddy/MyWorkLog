@@ -42,6 +42,8 @@ public class JiraCookieBasedAuthentactionServiceImpl implements JiraAuthentactio
 	}
 
 	private void updateUserDetails(String userDetails, LoginResponseTO response) throws TaskManagementServiceException {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
+				MethodConstants.UPDATE_USER_DETAILS);
 		UserTO userTO = new UserTO();
 		try {
 			JSONObject responseObject = new JSONObject(userDetails);
@@ -56,6 +58,7 @@ public class JiraCookieBasedAuthentactionServiceImpl implements JiraAuthentactio
 			throw new TaskManagementServiceException(ErrorCodes.U04,
 					ErrorMessages.FAILED_DURING_FILTERING_USER_DETAILS);
 		}
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.UPDATE_USER_DETAILS);
 	}
 
 }

@@ -59,8 +59,12 @@ public class JiraDetailsController {
 			jiraDetilas = jiraDetailsService.getJiraDetailsByUserId(userId);
 			responseEntity = ResponseEntity.status(HttpStatus.OK).body(response.getSuccessResposne(ErrorCodes.J01,
 					ErrorMessages.JIRA_DETAIALS_FETCHED_SUCCESFULLY, jiraDetilas));
+			logger.info(GeneralConstants.LOGGER_FORMAT_2, ErrorCodes.J01,
+					ErrorMessages.JIRA_DETAIALS_FETCHED_SUCCESFULLY, userId);
 		} catch (final TaskManagementServiceException e) {
 			responseEntity = ResponseEntity.status(HttpStatus.OK).body(response.getErrorResponse(e));
+			logger.info(GeneralConstants.LOGGER_FORMAT_2, e.getErrorCode(), e.getErrorMessage(), userId);
+			logger.error(GeneralConstants.LOGGER_FORMAT, e.getErrorCode(), e.getErrorMessage());
 		}
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
 				MethodConstants.GET_JIRADETAILS_BY_USERID);
@@ -81,8 +85,13 @@ public class JiraDetailsController {
 			responseStatus = jiraDetailsService.addWorkLog(workLogInfoTo);
 			responseEntity = ResponseEntity.status(HttpStatus.OK).body(response.getSuccessResposne(ErrorCodes.W01,
 					ErrorMessages.WORKLOG_ADDED_SUCCESFULLY, responseStatus));
+			logger.info(GeneralConstants.LOGGER_FORMAT_2, ErrorCodes.W01, ErrorMessages.WORKLOG_ADDED_SUCCESFULLY,
+					workLogInfoTo.getUserName());
 		} catch (final TaskManagementServiceException e) {
 			responseEntity = ResponseEntity.status(HttpStatus.OK).body(response.getErrorResponse(e));
+			logger.info(GeneralConstants.LOGGER_FORMAT_2, e.getErrorCode(), e.getErrorMessage(),
+					workLogInfoTo.getUserName());
+			logger.error(GeneralConstants.LOGGER_FORMAT, e.getErrorCode(), e.getErrorMessage());
 		}
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.ADD_WORK_LOG);
 		return responseEntity;
@@ -104,9 +113,11 @@ public class JiraDetailsController {
 		if ((dates != null) && !dates.isEmpty()) {
 			responseEntity = ResponseEntity.status(HttpStatus.OK)
 					.body(response.getSuccessResposne(ErrorCodes.D01, ErrorMessages.DATES_FETCHED_SUCCESFULLY, dates));
+			logger.info(GeneralConstants.LOGGER_FORMAT, ErrorCodes.D01, ErrorMessages.DATES_FETCHED_SUCCESFULLY);
 		} else {
 			responseEntity = ResponseEntity.status(HttpStatus.OK)
 					.body(response.getSuccessResposne(ErrorCodes.D02, ErrorMessages.WORK_LOGGED_TODAY_OR_NEVER, dates));
+			logger.info(GeneralConstants.LOGGER_FORMAT, ErrorCodes.D02, ErrorMessages.WORK_LOGGED_TODAY_OR_NEVER);
 		}
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.GET_DATES);
 		return responseEntity;
@@ -133,11 +144,16 @@ public class JiraDetailsController {
 			if (!jiraDetials.isEmpty()) {
 				responseEntity = ResponseEntity.status(HttpStatus.OK).body(response.getSuccessResposne(ErrorCodes.JS04,
 						ErrorMessages.JIRA_DETAIALS_FETCHED_SUCCESFULLY, jiraDetials));
+				logger.info(GeneralConstants.LOGGER_FORMAT_2, ErrorCodes.JS04,
+						ErrorMessages.JIRA_DETAIALS_FETCHED_SUCCESFULLY, issueKey);
 			} else {
 				responseEntity = ResponseEntity.status(HttpStatus.OK)
 						.body(response.getSuccessResposne(ErrorCodes.JS05, ErrorMessages.JIRA_NOT_AVAILABLE, null));
+				logger.info(GeneralConstants.LOGGER_FORMAT_2, ErrorCodes.JS05, ErrorMessages.JIRA_NOT_AVAILABLE,
+						issueKey);
 			}
 		} catch (final TaskManagementServiceException e) {
+			logger.error(GeneralConstants.LOGGER_FORMAT, e.getErrorCode(), e.getErrorMessage());
 			responseEntity = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response.getErrorResponse(e));
 		}
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,

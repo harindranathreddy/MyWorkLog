@@ -59,11 +59,14 @@ public class AuthenticationController {
 				responseEntity = ResponseEntity.status(HttpStatus.OK).headers(hpptHeaders)
 						.body(response.getSuccessResposne(ErrorCodes.L01, ErrorMessages.LOGIN_SUCCESSFUL,
 								responseObject.getUserTO()));
+				logger.info(GeneralConstants.LOGGER_FORMAT_2, ErrorCodes.L01, ErrorMessages.LOGIN_SUCCESSFUL, userName);
 			} else {
 				responseEntity = ResponseEntity.status(HttpStatus.BAD_REQUEST)
 						.body(response.getErrorResponse(ErrorCodes.L02, ErrorMessages.LOGIN_FAILED));
+				logger.info(GeneralConstants.LOGGER_FORMAT_2, ErrorCodes.L02, ErrorMessages.LOGIN_FAILED, userName);
 			}
 		} catch (final TaskManagementServiceException e) {
+			logger.error(GeneralConstants.LOGGER_FORMAT, e.getErrorCode(), e.getErrorMessage());
 			responseEntity = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response.getErrorResponse(e));
 		}
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.AUTHENTICATE_USER);

@@ -43,13 +43,19 @@ public class JiraApi {
 		String jiraDetails;
 		HttpURLConnection connection = null;
 		try {
-			URL jiraURL = new URL("https://jira2.cerner.com/rest/api/2/search?jql=assignee=%22" + userId
-					+ "%22+AND+status%20not%20in%20(\"CLOSED\")");
+			URL jiraURL = new URL("https://jira2.cerner.com/rest/api/2/search?jql=(%20assignee%20=%20" + userId
+					+ "%20OR%20%22Solution%20Designer%22=" + userId + "%20OR%20%22Test%20Analyst%22=" + userId
+					+ "%20)AND%20STATUS%20NOT%20IN%20(%27CLOSED%27)");
 			connection = (HttpURLConnection) jiraURL.openConnection();
 			connection.setRequestMethod("GET");
 			connection.connect();
-			Reader in = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
-			jiraDetails = IOUtils.toString(in);
+			if (connection.getResponseCode() == 200) {
+				Reader in = new BufferedReader(
+						new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+				jiraDetails = IOUtils.toString(in);
+			} else {
+				throw new TaskManagementServiceException(ErrorCodes.E03, ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS);
+			}
 		} catch (final UnsupportedEncodingException e) {
 			logger.error(ErrorCodes.E01, ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS);
 			throw new TaskManagementServiceException(ErrorCodes.E01, ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS);
@@ -103,6 +109,7 @@ public class JiraApi {
 	}
 
 	public int addWorkLog(WorkLogInfoTO workLogInfo) throws TaskManagementServiceException {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START, MethodConstants.ADD_WORK_LOG);
 		HttpURLConnection connection = null;
 		int response = 0;
 		String failedLogs = ErrorMessages.WORKLOG_FAILED_TO_ADD;
@@ -140,12 +147,17 @@ public class JiraApi {
 				}
 			}
 			if (!failedLogs.equalsIgnoreCase(ErrorMessages.WORKLOG_FAILED_TO_ADD)) {
+				logger.info(GeneralConstants.LOGGER_FORMAT_2, ErrorCodes.W02, failedLogs, workLogInfo.getUserName());
 				throw new TaskManagementServiceException(ErrorCodes.W02, failedLogs);
 			}
 		} catch (MalformedURLException e) {
+			logger.error(GeneralConstants.LOGGER_FORMAT, ErrorCodes.W03,
+					ErrorMessages.WORKLOG_FAILED_TO_ADD_DUE_TO_MALFORMEDURLEXCEPTION);
 			throw new TaskManagementServiceException(ErrorCodes.W03,
 					ErrorMessages.WORKLOG_FAILED_TO_ADD_DUE_TO_MALFORMEDURLEXCEPTION);
 		} catch (IOException e) {
+			logger.error(GeneralConstants.LOGGER_FORMAT, ErrorCodes.W04,
+					ErrorMessages.WORKLOG_FAILED_TO_ADD_DUE_TO_IOEXCEPTION);
 			throw new TaskManagementServiceException(ErrorCodes.W04,
 					ErrorMessages.WORKLOG_FAILED_TO_ADD_DUE_TO_IOEXCEPTION);
 		} finally {
@@ -153,9 +165,8 @@ public class JiraApi {
 				connection.disconnect();
 			}
 		}
-
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.ADD_WORK_LOG);
 		return response;
-
 	}
 
 	public LoginResponseTO authenticateUser(String userName, String password) throws TaskManagementServiceException {
@@ -214,6 +225,8 @@ public class JiraApi {
 
 	public LoginResponseTO authenticateUserforCookies(String userName, String password)
 			throws TaskManagementServiceException {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
+				MethodConstants.AUTHENTICATE_USER_FOR_COOKIES);
 		URL jiraURL;
 		int responseCode = 0;
 		LoginResponseTO loginresponseTO = new LoginResponseTO();
@@ -237,6 +250,8 @@ public class JiraApi {
 			connection.connect();
 			responseCode = connection.getResponseCode();
 			if (responseCode != 200) {
+				logger.info(GeneralConstants.LOGGER_FORMAT_2, ErrorCodes.E05, ErrorMessages.FAILED_TO_AUTHENTICATE_USER,
+						userName);
 				throw new TaskManagementServiceException(ErrorCodes.E05, ErrorMessages.FAILED_TO_AUTHENTICATE_USER);
 			} else {
 				loginresponseTO.setStatus(responseCode);
@@ -244,8 +259,11 @@ public class JiraApi {
 				loginresponseTO.setHeaders(connection.getHeaderFields());
 			}
 		} catch (final IOException e) {
+			logger.error(GeneralConstants.LOGGER_FORMAT, ErrorCodes.E05, ErrorMessages.FAILED_TO_AUTHENTICATE_USER);
 			throw new TaskManagementServiceException(ErrorCodes.E05, ErrorMessages.FAILED_TO_AUTHENTICATE_USER);
 		}
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
+				MethodConstants.AUTHENTICATE_USER_FOR_COOKIES);
 		return loginresponseTO;
 	}
 

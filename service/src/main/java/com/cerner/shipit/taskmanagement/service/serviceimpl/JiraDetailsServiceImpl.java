@@ -38,13 +38,14 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
 				MethodConstants.GET_JIRADETAILS_BY_USERID);
 		String jiraDetailsfromApi = jiraApi.getInProgressJiraDetailsByUserId(userId);
-		List<JiraTO> jiraDetails = filterJiraDetails(jiraDetailsfromApi);
+		List<JiraTO> jiraDetails = filterJiraDetails(jiraDetailsfromApi, userId);
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
 				MethodConstants.GET_JIRADETAILS_BY_USERID);
 		return jiraDetails;
 	}
 
-	private List<JiraTO> filterJiraDetails(String jiraDetailsfromApi) throws TaskManagementServiceException {
+	private List<JiraTO> filterJiraDetails(String jiraDetailsfromApi, String userId)
+			throws TaskManagementServiceException {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START, MethodConstants.FILTER_JIRADETAILS);
 		final List<JiraTO> jiraDetails = new ArrayList<>();
 		try {
@@ -65,7 +66,7 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 				JSONObject issueType = fields.getJSONObject("issuetype");
 				jira.setType(issueType.getString("name"));
 				jira.setIssueIcon(issueType.getString("iconUrl"));
-				jira.setLastLoggedDate(getJiraLastWorkLogDate(jiraObject.getString("key")));
+				jira.setLastLoggedDate(getJiraLastWorkLogDate(jiraObject.getString("key"), userId));
 				jiraDetails.add(jira);
 			}
 		} catch (JSONException e) {
@@ -77,27 +78,32 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 		return jiraDetails;
 	}
 
-	public String getJiraLastWorkLogDate(String issueKey) throws TaskManagementServiceException {
+	public String getJiraLastWorkLogDate(String issueKey, String userId) throws TaskManagementServiceException {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
 				MethodConstants.GET_JIRA_WORKLOG_DATE);
 		String jiraWorkLog = jiraApi.getWorkLogDataByJiraId(issueKey);
-		String lastLoggedDate = filterWorkLogs(jiraWorkLog);
+		String lastLoggedDate = filterWorkLogs(jiraWorkLog, userId);
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
 				MethodConstants.GET_JIRA_WORKLOG_DATE);
 		return lastLoggedDate;
 	}
 
-	private String filterWorkLogs(String jiraWorkLog) throws TaskManagementServiceException {
-		String lastLoggedDate = null;
+	private String filterWorkLogs(String jiraWorkLog, String userId) throws TaskManagementServiceException {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START, MethodConstants.FILTER_WORKLOGS);
+		String lastLoggedDate = null;
 		try {
 			JSONObject jsonObject = new JSONObject(jiraWorkLog);
 			String workLogArray = jsonObject.getString("worklogs");
 			JSONArray jiraList = new JSONArray(workLogArray);
-			if (jiraList.length() > 0) {
+			for (int i = jiraList.length() - 1; i >= 0; i--) {
 				JSONObject latestWorkLogObject = jiraList.getJSONObject(jiraList.length() - 1);
-				lastLoggedDate = latestWorkLogObject.getString("started");
-			} else {
+				JSONObject author = latestWorkLogObject.getJSONObject("author");
+				if ((null == userId) || userId.equalsIgnoreCase(author.getString("key"))) {
+					lastLoggedDate = latestWorkLogObject.getString("started");
+					break;
+				}
+			}
+			if (null == lastLoggedDate) {
 				lastLoggedDate = "0";
 			}
 		} catch (JSONException e) {
@@ -138,7 +144,7 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
 				MethodConstants.GET_JIRASEARCHDETAILS);
 		String jiraDetailsfromApi = jiraApi.getJiraSearchDetails(issueKey);
-		List<JiraTO> jiraDetails = filterJiraDetails(jiraDetailsfromApi);
+		List<JiraTO> jiraDetails = filterJiraDetails(jiraDetailsfromApi, null);
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
 				MethodConstants.GET_JIRASEARCHDETAILS);
 		return jiraDetails;
