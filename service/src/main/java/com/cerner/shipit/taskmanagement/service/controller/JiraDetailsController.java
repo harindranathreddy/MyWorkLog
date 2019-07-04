@@ -26,6 +26,7 @@ import com.cerner.shipit.taskmanagement.utility.constant.ErrorMessages;
 import com.cerner.shipit.taskmanagement.utility.constant.GeneralConstants;
 import com.cerner.shipit.taskmanagement.utility.constant.MethodConstants;
 import com.cerner.shipit.taskmanagement.utility.response.Response;
+import com.cerner.shipit.taskmanagement.utility.tos.JiraSummaryTO;
 import com.cerner.shipit.taskmanagement.utility.tos.JiraTO;
 import com.cerner.shipit.taskmanagement.utility.tos.WorkLogInfoTO;
 
@@ -131,7 +132,8 @@ public class JiraDetailsController {
 	 * @throws TaskManagementServiceException
 	 */
 	@GetMapping(value = "/jiraDetailsByJiraId", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> getJiraDetailsByJiraId(@RequestParam(value = "issueKey") String issueKey) {
+	public ResponseEntity<Object> getJiraDetailsByJiraId(@RequestParam(value = "issueKey") String issueKey,
+			@RequestParam(value = "userId") String userId) {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
 				MethodConstants.GET_JIRADETAILS_BY_JIRAID);
 		List<JiraTO> jiraDetials = new ArrayList<>();
@@ -140,7 +142,7 @@ public class JiraDetailsController {
 		try {
 			final JiraDetailsService jiraDetailsService = jiraDetailsFactory
 					.getJiraDetailsServiceInstance("jiraDetailsServiceImpl");
-			jiraDetials = jiraDetailsService.getJiraSearchDetails(issueKey);
+			jiraDetials = jiraDetailsService.getJiraSearchDetails(issueKey, userId);
 			if (!jiraDetials.isEmpty()) {
 				responseEntity = ResponseEntity.status(HttpStatus.OK).body(response.getSuccessResposne(ErrorCodes.JS04,
 						ErrorMessages.JIRA_DETAIALS_FETCHED_SUCCESFULLY, jiraDetials));
@@ -158,6 +160,51 @@ public class JiraDetailsController {
 		}
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
 				MethodConstants.GET_JIRADETAILS_BY_JIRAID);
+		return responseEntity;
+	}
+
+	@PostMapping(value = "/getWorkLogVerificationSummary", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> getWorkLogVerificationSummary(@RequestBody WorkLogInfoTO workLogInfoTo) {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
+				MethodConstants.GET_WORKLOG_VERIFICATION_SUMMARY);
+		ResponseEntity<Object> responseEntity = null;
+		Response response = new Response();
+		List<JiraSummaryTO> workLogVerificationSummary = new ArrayList<>();
+		try {
+			final JiraDetailsService jiraDetailsService = jiraDetailsFactory
+					.getJiraDetailsServiceInstance("jiraDetailsServiceImpl");
+			workLogVerificationSummary = jiraDetailsService.getWorkLogVerificationSummary(workLogInfoTo);
+			responseEntity = ResponseEntity.status(HttpStatus.OK).body(response.getSuccessResposne(ErrorCodes.WLV02,
+					ErrorMessages.WORKLOG_VERIFICATION_DETAILS_FETCHED_SUCCESSFULLY, workLogVerificationSummary));
+		} catch (TaskManagementServiceException e) {
+			logger.error(GeneralConstants.LOGGER_FORMAT, e.getErrorCode(), e.getErrorMessage());
+			responseEntity = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response.getErrorResponse(e));
+		}
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
+				MethodConstants.GET_WORKLOG_VERIFICATION_SUMMARY);
+		return responseEntity;
+	}
+
+	@GetMapping(value = "/jiraDetailsForSummary", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> getjiraDetailsForSummary(@RequestParam(value = "userId") String userId,
+			@RequestParam(value = "noOfDays") int noOfDays) {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
+				MethodConstants.GET_JIRADETAILS_FOR_SUMMARY);
+		ResponseEntity<Object> responseEntity = null;
+		Response response = new Response();
+		List<JiraSummaryTO> workLogVerificationSummary = new ArrayList<>();
+		try {
+			final JiraDetailsService jiraDetailsService = jiraDetailsFactory
+					.getJiraDetailsServiceInstance("jiraDetailsServiceImpl");
+			workLogVerificationSummary = jiraDetailsService.getUserSummary(userId, noOfDays);
+			responseEntity = ResponseEntity.status(HttpStatus.OK).body(response.getSuccessResposne(ErrorCodes.US01,
+					ErrorMessages.SUMMARY_DETAILS_FETCHED_SUCCESSFULLY, workLogVerificationSummary));
+		} catch (TaskManagementServiceException e) {
+			logger.error(GeneralConstants.LOGGER_FORMAT, e.getErrorCode(), e.getErrorMessage());
+			responseEntity = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response.getErrorResponse(e));
+		}
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
+				MethodConstants.GET_JIRADETAILS_FOR_SUMMARY);
 		return responseEntity;
 	}
 }

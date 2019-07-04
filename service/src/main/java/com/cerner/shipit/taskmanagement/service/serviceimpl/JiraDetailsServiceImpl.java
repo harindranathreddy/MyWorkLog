@@ -1,7 +1,12 @@
 package com.cerner.shipit.taskmanagement.service.serviceimpl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.joda.time.Days;
 import org.joda.time.LocalDate;
@@ -21,7 +26,10 @@ import com.cerner.shipit.taskmanagement.utility.constant.ErrorCodes;
 import com.cerner.shipit.taskmanagement.utility.constant.ErrorMessages;
 import com.cerner.shipit.taskmanagement.utility.constant.GeneralConstants;
 import com.cerner.shipit.taskmanagement.utility.constant.MethodConstants;
+import com.cerner.shipit.taskmanagement.utility.tos.JiraSummaryTO;
 import com.cerner.shipit.taskmanagement.utility.tos.JiraTO;
+import com.cerner.shipit.taskmanagement.utility.tos.WorkLogDaySummaryTO;
+import com.cerner.shipit.taskmanagement.utility.tos.WorkLogDetailsTO;
 import com.cerner.shipit.taskmanagement.utility.tos.WorkLogInfoTO;
 
 @Service
@@ -96,7 +104,7 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 			String workLogArray = jsonObject.getString("worklogs");
 			JSONArray jiraList = new JSONArray(workLogArray);
 			for (int i = jiraList.length() - 1; i >= 0; i--) {
-				JSONObject latestWorkLogObject = jiraList.getJSONObject(jiraList.length() - 1);
+				JSONObject latestWorkLogObject = jiraList.getJSONObject(i);
 				JSONObject author = latestWorkLogObject.getJSONObject("author");
 				if ((null == userId) || userId.equalsIgnoreCase(author.getString("key"))) {
 					lastLoggedDate = latestWorkLogObject.getString("started");
@@ -140,13 +148,229 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 	}
 
 	@Override
-	public List<JiraTO> getJiraSearchDetails(String issueKey) throws TaskManagementServiceException {
+	public List<JiraTO> getJiraSearchDetails(String issueKey, String userId) throws TaskManagementServiceException {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
 				MethodConstants.GET_JIRASEARCHDETAILS);
 		String jiraDetailsfromApi = jiraApi.getJiraSearchDetails(issueKey);
-		List<JiraTO> jiraDetails = filterJiraDetails(jiraDetailsfromApi, null);
+		List<JiraTO> jiraDetails = filterJiraDetails(jiraDetailsfromApi, userId);
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
 				MethodConstants.GET_JIRASEARCHDETAILS);
 		return jiraDetails;
+	}
+
+	@Override
+	public List<JiraSummaryTO> getWorkLogVerificationSummary(WorkLogInfoTO workLogInfoTo)
+			throws TaskManagementServiceException {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
+				MethodConstants.GET_WORKLOG_VERIFICATION_SUMMARY);
+		Map<String, List<JSONObject>> jiraWorkLogs = new HashMap<>();
+		List<JiraSummaryTO> jiraVerificationSummarys = new ArrayList<>();
+		List<JSONObject> workLogs = new ArrayList<>();
+		try {
+			List<WorkLogDetailsTO> workLogDetails = workLogInfoTo.getWorklogs();
+			for (WorkLogDetailsTO workLogDetailsTO : workLogDetails) {
+				if (jiraWorkLogs.get(workLogDetailsTO.getId()) == null) {
+					String jiraWorkLog = jiraApi.getWorkLogDataByJiraId(workLogDetailsTO.getId());
+					JSONObject jsonObject = new JSONObject(jiraWorkLog);
+					JSONArray workLogsArray = jsonObject.getJSONArray("worklogs");
+					for (int i = 0; i < workLogsArray.length(); i++) {
+						workLogs.add(workLogsArray.getJSONObject(i));
+					}
+					jiraWorkLogs.put(workLogDetailsTO.getId(), workLogs);
+				}
+				JSONObject workLoggedForDay = findWorkLogForDate(workLogDetailsTO,
+						jiraWorkLogs.get(workLogDetailsTO.getId()));
+				WorkLogDaySummaryTO workLogSummeryTO = getWorkLogDaySummery(workLoggedForDay, workLogDetailsTO);
+				boolean workLogAdded = false;
+				if (!jiraVerificationSummarys.isEmpty()) {
+					for (JiraSummaryTO jiraVerificationSummary : jiraVerificationSummarys) {
+						if (jiraVerificationSummary.getKey().equalsIgnoreCase(workLogDetailsTO.getId())) {
+							if (null == jiraVerificationSummary.getWorkLogDaySummeryTOs()) {
+								jiraVerificationSummary.setWorkLogDaySummeryTOs(new ArrayList<>());
+							}
+							jiraVerificationSummary.getWorkLogDaySummeryTOs().add(workLogSummeryTO);
+							workLogAdded = true;
+							break;
+						}
+					}
+				}
+				if (!workLogAdded) {
+					JiraSummaryTO jiraSummaryTO = new JiraSummaryTO();
+					jiraSummaryTO.setKey(workLogDetailsTO.getId());
+					if (null == jiraSummaryTO.getWorkLogDaySummeryTOs()) {
+						jiraSummaryTO.setWorkLogDaySummeryTOs(new ArrayList<>());
+					}
+					jiraSummaryTO.getWorkLogDaySummeryTOs().add(workLogSummeryTO);
+					jiraVerificationSummarys.add(jiraSummaryTO);
+				}
+			}
+			calculatingTotalJiraLogTime(jiraVerificationSummarys);
+		} catch (JSONException e) {
+			logger.error(ErrorCodes.WLV01, ErrorMessages.FAILED_DURING_JSON_PARING);
+			throw new TaskManagementServiceException(ErrorCodes.WLV01, ErrorMessages.FAILED_DURING_JSON_PARING);
+		}
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
+				MethodConstants.GET_WORKLOG_VERIFICATION_SUMMARY);
+		return jiraVerificationSummarys;
+	}
+
+	private void calculatingTotalJiraLogTime(List<JiraSummaryTO> jiraVerificationSummarys) {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
+				MethodConstants.CALCULATING_TOTAL_JIRA_LOG_TIME);
+		for (JiraSummaryTO jiraSummaryTO : jiraVerificationSummarys) {
+			long totalLogTime = 0;
+			for (WorkLogDaySummaryTO workLog : jiraSummaryTO.getWorkLogDaySummeryTOs()) {
+				if (null != workLog) {
+					totalLogTime += workLog.getTotalSeconds();
+				}
+			}
+			jiraSummaryTO.setTotalHoursLogged((TimeUnit.SECONDS.toHours(totalLogTime)) + "h");
+		}
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
+				MethodConstants.CALCULATING_TOTAL_JIRA_LOG_TIME);
+	}
+
+	private WorkLogDaySummaryTO getWorkLogDaySummery(JSONObject jsonObject, WorkLogDetailsTO workLogDetailsTO)
+			throws TaskManagementServiceException {
+		WorkLogDaySummaryTO workLogDaySummaryTO = new WorkLogDaySummaryTO();
+		long totalWorkTime;
+		try {
+			long currentLogTimeInSeconds = 0;
+			if (jsonObject.has("started")) {
+				workLogDaySummaryTO.setStartDate(jsonObject.getString("started"));
+			} else {
+				workLogDaySummaryTO.setStartDate(workLogDetailsTO.getStarted());
+			}
+			if (jsonObject.has("timeSpent")) {
+				workLogDaySummaryTO.setLoggedTime(jsonObject.getString("timeSpent"));
+			} else {
+				workLogDaySummaryTO.setLoggedTime("0h");
+			}
+			workLogDaySummaryTO.setCurrentTimeSpent(workLogDetailsTO.getTimeSpent());
+			if (workLogDetailsTO.getTimeSpent().endsWith("h") || workLogDetailsTO.getTimeSpent().endsWith("H")) {
+				currentLogTimeInSeconds = TimeUnit.HOURS
+						.toSeconds(Long.parseLong(workLogDetailsTO.getTimeSpent().replaceAll("(?i)(h)", "")));
+			} else if (workLogDetailsTO.getTimeSpent().endsWith("m") || workLogDetailsTO.getTimeSpent().endsWith("M")) {
+				currentLogTimeInSeconds = TimeUnit.MINUTES
+						.toSeconds(Long.parseLong(workLogDetailsTO.getTimeSpent().replaceAll("(?i)(m)", "")));
+			} else if (workLogDetailsTO.getTimeSpent().endsWith("s") || workLogDetailsTO.getTimeSpent().endsWith("S")) {
+				currentLogTimeInSeconds = TimeUnit.SECONDS
+						.toSeconds(Long.parseLong(workLogDetailsTO.getTimeSpent().replaceAll("(?i)(s)", "")));
+			}
+			if (jsonObject.has("timeSpentSeconds")) {
+				totalWorkTime = currentLogTimeInSeconds + jsonObject.getLong("timeSpentSeconds");
+			} else {
+				totalWorkTime = currentLogTimeInSeconds;
+			}
+			workLogDaySummaryTO.setTotalSeconds(totalWorkTime);
+			workLogDaySummaryTO.setTotalTimeSpent((TimeUnit.SECONDS.toHours(totalWorkTime)) + "h");
+
+		} catch (JSONException e) {
+			logger.error(ErrorCodes.WLD01, ErrorMessages.FAILED_DURING_WORKLOG_DATE);
+			throw new TaskManagementServiceException(ErrorCodes.WLD01, ErrorMessages.FAILED_DURING_WORKLOG_DATE);
+		}
+		return workLogDaySummaryTO;
+	}
+
+	private JSONObject findWorkLogForDate(WorkLogDetailsTO currentWorkLogDetailsTO, List<JSONObject> workLogs)
+			throws TaskManagementServiceException {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
+				MethodConstants.FIND_WORK_LOG_FOR_DATE);
+		JSONObject workLogDay = new JSONObject();
+		try {
+			LocalDate logDate = LocalDate.parse(currentWorkLogDetailsTO.getStarted().substring(0,
+					currentWorkLogDetailsTO.getStarted().indexOf('T')));
+			for (JSONObject workLog : workLogs) {
+				LocalDate workLogDate = LocalDate
+						.parse(workLog.getString("started").substring(0, workLog.getString("started").indexOf('T')));
+				if (workLogDate.equals(logDate)) {
+					workLogDay = workLog;
+					break;
+				}
+			}
+		} catch (JSONException e) {
+			logger.error(ErrorCodes.WLD01, ErrorMessages.FAILED_DURING_WORKLOG_DATE);
+			throw new TaskManagementServiceException(ErrorCodes.WLD01, ErrorMessages.FAILED_DURING_WORKLOG_DATE);
+		}
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
+				MethodConstants.FIND_WORK_LOG_FOR_DATE);
+		return workLogDay;
+	}
+
+	@Override
+	public List<JiraSummaryTO> getUserSummary(String userId, int noOfDays) throws TaskManagementServiceException {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START, MethodConstants.GET_USER_SUMMARY);
+		List<JiraSummaryTO> userSummaryDetails = new ArrayList<>();
+		try {
+			String updatedJiraDetails = jiraApi.getAllJirasUpdatedForSummary(userId, noOfDays);
+			JSONObject jiraDetails = new JSONObject(updatedJiraDetails);
+			if (jiraDetails.getInt("total") > 0) {
+				JSONArray updatedJiras = jiraDetails.getJSONArray("issues");
+				for (int i = 0; i < jiraDetails.getInt("total"); i++) {
+					JSONObject jira = updatedJiras.getJSONObject(i);
+					JiraSummaryTO jiraSummaryTO = new JiraSummaryTO();
+					jiraSummaryTO.setKey(jira.getString("key"));
+					JSONObject jraDetails = jira.getJSONObject("fields");
+					jiraSummaryTO.setSummary(jraDetails.getString("summary"));
+					updateJiraWorklogSummary(jiraSummaryTO, userId, noOfDays);
+					userSummaryDetails.add(jiraSummaryTO);
+				}
+				calculatingTotalJiraLogTime(userSummaryDetails);
+			} else {
+				throw new TaskManagementServiceException(ErrorCodes.US03,
+						ErrorMessages.NO_JIRA_UPDATED_IN_PROVIDED_TIME_FRAME);
+			}
+		} catch (JSONException e) {
+			logger.error(ErrorCodes.US02, ErrorMessages.FAILED_DURING_USER_SUMMARY_CREATION);
+			throw new TaskManagementServiceException(ErrorCodes.US02,
+					ErrorMessages.FAILED_DURING_USER_SUMMARY_CREATION);
+		}
+
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.GET_USER_SUMMARY);
+		return userSummaryDetails;
+	}
+
+	private void updateJiraWorklogSummary(JiraSummaryTO jiraSummaryTO, String userId, int noOfDays)
+			throws TaskManagementServiceException {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
+				MethodConstants.UPDATE_JIRA_WORKLOG_SUMMARY);
+		Map<String, WorkLogDaySummaryTO> daySummary = new LinkedHashMap();
+		try {
+			JSONObject jiraWorkLog = new JSONObject(jiraApi.getWorkLogDataByJiraId(jiraSummaryTO.getKey()));
+			UpdateMapwithDates(daySummary, noOfDays);
+			JSONArray dayWorkLogs = jiraWorkLog.getJSONArray("worklogs");
+			for (int i = 0; i < dayWorkLogs.length(); i++) {
+				JSONObject dayWorkLog = dayWorkLogs.getJSONObject(i);
+				String worklogStartedDate = dayWorkLog.getString("started").substring(0,
+						dayWorkLog.getString("started").indexOf("T"));
+				if (daySummary.containsKey(worklogStartedDate)) {
+					WorkLogDaySummaryTO workLogDaySummaryTO = daySummary.get(worklogStartedDate);
+					if (null == daySummary.get(worklogStartedDate)) {
+						workLogDaySummaryTO = new WorkLogDaySummaryTO();
+						daySummary.put(worklogStartedDate, workLogDaySummaryTO);
+					}
+					workLogDaySummaryTO.setStartDate(worklogStartedDate);
+					workLogDaySummaryTO.setTotalSeconds(
+							workLogDaySummaryTO.getTotalSeconds() + dayWorkLog.getLong("timeSpentSeconds"));
+					workLogDaySummaryTO
+							.setTotalTimeSpent(TimeUnit.SECONDS.toHours(workLogDaySummaryTO.getTotalSeconds()) + "h");
+				}
+			}
+			jiraSummaryTO.setWorkLogDaySummeryTOs(daySummary.values().stream().collect(Collectors.toList()));
+		} catch (JSONException | TaskManagementServiceException e) {
+			logger.error(ErrorCodes.US04, ErrorMessages.FAILED_DURING_USER_WORKLOG_SUMMARY_CALCULATION);
+			throw new TaskManagementServiceException(ErrorCodes.US04,
+					ErrorMessages.FAILED_DURING_USER_WORKLOG_SUMMARY_CALCULATION);
+		}
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
+				MethodConstants.UPDATE_JIRA_WORKLOG_SUMMARY);
+
+	}
+
+	private void UpdateMapwithDates(Map<String, WorkLogDaySummaryTO> daySummary, int noOfDays) {
+		LocalDate currentDate = LocalDate.now();
+		for (int i = noOfDays; i >= 0; i--) {
+			daySummary.put(currentDate.minusDays(i).toString(), null);
+		}
 	}
 }

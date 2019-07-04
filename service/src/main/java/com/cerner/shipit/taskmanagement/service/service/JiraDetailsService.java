@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.cerner.shipit.taskmanagement.exception.TaskManagementServiceException;
+import com.cerner.shipit.taskmanagement.utility.tos.JiraSummaryTO;
 import com.cerner.shipit.taskmanagement.utility.tos.JiraTO;
 import com.cerner.shipit.taskmanagement.utility.tos.WorkLogInfoTO;
 
@@ -17,5 +18,11 @@ public interface JiraDetailsService {
 
 	List<String> getDates(String lastLoggedDate);
 
-	List<JiraTO> getJiraSearchDetails(String issueKey) throws TaskManagementServiceException;
+	List<JiraTO> getJiraSearchDetails(String issueKey, String userId) throws TaskManagementServiceException;
+
+	List<JiraSummaryTO> getWorkLogVerificationSummary(WorkLogInfoTO workLogInfoTo)
+			throws TaskManagementServiceException;
+
+	List<JiraSummaryTO> getUserSummary(String userId, int noOfDays) throws TaskManagementServiceException;
+
 }

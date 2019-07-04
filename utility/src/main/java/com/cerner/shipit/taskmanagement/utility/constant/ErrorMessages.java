@@ -21,6 +21,15 @@ public class ErrorMessages {
 	public static final String FAILED_TO_FETCH_USER_DETAILS = "Failed to fetch user details";
 	public static final String FAILED_DURING_FILTERING_USER_DETAILS = "Failed during filtering user details.";
 	public static final String WORK_LOGGED_TODAY_OR_NEVER = "Work is either logged today are never logged.";
+	public static final String WORKLOG_SUMMERY_FETCHED_SUCCESFULLY_LOGGING_JIRAS = "WorkLog Summery fetched Succesfully for logging jira";
+	public static final String FAILED_DURING_JSON_PARING = "Failed during JSON paring for worklog data.";
+	public static final String FAILED_DURING_WORKLOG_DATE = "Failed during worklog day parsing.";
+	public static final String WORKLOG_VERIFICATION_DETAILS_FETCHED_SUCCESSFULLY = "Worklog verification details fetched succssfully.";
+	public static final String FAILED_TO_FETCH_JIRA_DETAILS_FOR_SUMMARY = "Failed to fetch jira details for summary.";
+	public static final String SUMMARY_DETAILS_FETCHED_SUCCESSFULLY = "Associate Summary details fetched succesfully.";
+	public static final String FAILED_DURING_USER_SUMMARY_CREATION = "Failed during user summary creation.";
+	public static final String NO_JIRA_UPDATED_IN_PROVIDED_TIME_FRAME = "No Jira updated in provided time frame.";
+	public static final String FAILED_DURING_USER_WORKLOG_SUMMARY_CALCULATION = "Failed during jira worklog summary details.";
 
 	private ErrorMessages() {
 

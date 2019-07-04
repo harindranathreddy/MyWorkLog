@@ -45,7 +45,7 @@ public class JiraApi {
 		try {
 			URL jiraURL = new URL("https://jira2.cerner.com/rest/api/2/search?jql=(%20assignee%20=%20" + userId
 					+ "%20OR%20%22Solution%20Designer%22=" + userId + "%20OR%20%22Test%20Analyst%22=" + userId
-					+ "%20)AND%20STATUS%20NOT%20IN%20(%27CLOSED%27)");
+					+ "%20)AND%20STATUS%20NOT%20IN%20(%27CLOSED%27,%27ISSUE%20DONE%27)");
 			connection = (HttpURLConnection) jiraURL.openConnection();
 			connection.setRequestMethod("GET");
 			connection.connect();
@@ -274,11 +274,13 @@ public class JiraApi {
 		String userDetails = null;
 		HttpURLConnection connection = null;
 		try {
-			URL jiraURL = new URL("https://jira2.cerner.com/rest/api/2/user?username=" + userName);
+			URL jiraURL = new URL("https://jira2.cerner.com/rest/api/2/myself");
 			connection = (HttpURLConnection) jiraURL.openConnection();
 			connection.setRequestMethod("GET");
 			connection.setRequestProperty("X-AUSERNAME", userName);
 			connection.setRequestProperty("Cookie", headers.get("Set-Cookie").toString());
+			connection.setRequestProperty("Accept", "*/*");
+			connection.setRequestProperty("Content-Type", "application/json");
 			connection.connect();
 			if (connection.getResponseCode() == 200) {
 				Reader in = new BufferedReader(
@@ -305,5 +307,47 @@ public class JiraApi {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
 				MethodConstants.GET_USER_DETAILS_FROM_JIRA);
 		return userDetails;
+	}
+
+	public String getAllJirasUpdatedForSummary(String userId, int noOfDays) throws TaskManagementServiceException {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
+				MethodConstants.GET_INPROGRESS_JIRADETAILS_BY_USERID);
+		String jiraDetails;
+		HttpURLConnection connection = null;
+		try {
+			URL jiraURL = new URL("https://jira2.cerner.com/rest/api/2/search?jql=assignee=%22" + userId
+					+ "%22%20AND%20worklogDate%20%3E=%20startOfDay(-" + noOfDays + "d)");
+			connection = (HttpURLConnection) jiraURL.openConnection();
+			connection.setRequestMethod("GET");
+			connection.connect();
+			if (connection.getResponseCode() == 200) {
+				Reader in = new BufferedReader(
+						new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+				jiraDetails = IOUtils.toString(in);
+			} else {
+				throw new TaskManagementServiceException(ErrorCodes.E03,
+						ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS_FOR_SUMMARY);
+			}
+		} catch (final UnsupportedEncodingException e) {
+			logger.error(ErrorCodes.E01, ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS_FOR_SUMMARY);
+			throw new TaskManagementServiceException(ErrorCodes.E01,
+					ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS_FOR_SUMMARY);
+		} catch (final ClientProtocolException e) {
+			logger.error(ErrorCodes.E02, ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS_FOR_SUMMARY);
+			throw new TaskManagementServiceException(ErrorCodes.E02,
+					ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS_FOR_SUMMARY);
+		} catch (final IOException e) {
+			logger.error(ErrorCodes.E03, ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS_FOR_SUMMARY);
+			throw new TaskManagementServiceException(ErrorCodes.E03,
+					ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS_FOR_SUMMARY);
+		} finally {
+			if (connection != null) {
+				connection.disconnect();
+			}
+		}
+
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
+				MethodConstants.GET_INPROGRESS_JIRADETAILS_BY_USERID);
+		return jiraDetails;
 	}
 }

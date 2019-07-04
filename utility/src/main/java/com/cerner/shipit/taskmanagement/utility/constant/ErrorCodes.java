@@ -42,6 +42,19 @@ public class ErrorCodes {
 	public static final String U03 = "U03";
 	public static final String U04 = "U04";
 	
+	// Work Log Verification
+	public static final String WLV01 = "WLV01";
+	public static final String WLV02 = "WLV02";
+	
+	// Work Log Summary for Day
+	public static final String WLD01 = "WLD01";
+	
+	//User Summary
+	public static final String US01 = "US01";
+	public static final String US02 = "US02";
+	public static final String US03 = "US03";
+	public static final String US04 = "US04";
+	
 	private ErrorCodes() {
 
 	}
