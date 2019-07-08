@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -26,6 +27,8 @@ import com.cerner.shipit.taskmanagement.utility.constant.ErrorCodes;
 import com.cerner.shipit.taskmanagement.utility.constant.ErrorMessages;
 import com.cerner.shipit.taskmanagement.utility.constant.GeneralConstants;
 import com.cerner.shipit.taskmanagement.utility.constant.MethodConstants;
+import com.cerner.shipit.taskmanagement.utility.tos.GraphDataTO;
+import com.cerner.shipit.taskmanagement.utility.tos.GraphDatasetTO;
 import com.cerner.shipit.taskmanagement.utility.tos.JiraSummaryTO;
 import com.cerner.shipit.taskmanagement.utility.tos.JiraTO;
 import com.cerner.shipit.taskmanagement.utility.tos.WorkLogDaySummaryTO;
@@ -339,22 +342,32 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 			JSONObject jiraWorkLog = new JSONObject(jiraApi.getWorkLogDataByJiraId(jiraSummaryTO.getKey()));
 			UpdateMapwithDates(daySummary, noOfDays);
 			JSONArray dayWorkLogs = jiraWorkLog.getJSONArray("worklogs");
-			for (int i = 0; i < dayWorkLogs.length(); i++) {
+			for (int i = dayWorkLogs.length() - 1; i >= 0; i--) {
 				JSONObject dayWorkLog = dayWorkLogs.getJSONObject(i);
-				String worklogStartedDate = dayWorkLog.getString("started").substring(0,
-						dayWorkLog.getString("started").indexOf("T"));
-				if (daySummary.containsKey(worklogStartedDate)) {
-					WorkLogDaySummaryTO workLogDaySummaryTO = daySummary.get(worklogStartedDate);
-					if (null == daySummary.get(worklogStartedDate)) {
+				String worklogStartedDate = dayWorkLog.getString("started");
+				JSONObject author = dayWorkLog.getJSONObject("author");
+				if (daySummary.containsKey(worklogStartedDate.substring(0, worklogStartedDate.indexOf("T")))
+						&& author.getString("key").equalsIgnoreCase(userId)) {
+					WorkLogDaySummaryTO workLogDaySummaryTO = daySummary
+							.get(worklogStartedDate.substring(0, worklogStartedDate.indexOf("T")));
+					if (null == daySummary.get(worklogStartedDate.substring(0, worklogStartedDate.indexOf("T")))) {
 						workLogDaySummaryTO = new WorkLogDaySummaryTO();
-						daySummary.put(worklogStartedDate, workLogDaySummaryTO);
+						daySummary.put(worklogStartedDate.substring(0, worklogStartedDate.indexOf("T")),
+								workLogDaySummaryTO);
 					}
 					workLogDaySummaryTO.setStartDate(worklogStartedDate);
 					workLogDaySummaryTO.setTotalSeconds(
 							workLogDaySummaryTO.getTotalSeconds() + dayWorkLog.getLong("timeSpentSeconds"));
 					workLogDaySummaryTO
 							.setTotalTimeSpent(TimeUnit.SECONDS.toHours(workLogDaySummaryTO.getTotalSeconds()) + "h");
+					if (null == workLogDaySummaryTO.getComments()) {
+						workLogDaySummaryTO.setComments("");
+					}
+					workLogDaySummaryTO.setComments(
+							(workLogDaySummaryTO.getComments() + "\n" + dayWorkLog.getString("comment")).trim());
 				}
+			}
+			while (daySummary.values().remove(null)) {
 			}
 			jiraSummaryTO.setWorkLogDaySummeryTOs(daySummary.values().stream().collect(Collectors.toList()));
 		} catch (JSONException | TaskManagementServiceException e) {
@@ -371,6 +384,58 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 		LocalDate currentDate = LocalDate.now();
 		for (int i = noOfDays; i >= 0; i--) {
 			daySummary.put(currentDate.minusDays(i).toString(), null);
+		}
+	}
+
+	@Override
+	public GraphDataTO getUserSummaryGraphData(int noOfDays, List<JiraSummaryTO> jiraSummayDetails) {
+		Random random = new Random();
+		int low = 0;
+		int high = 256;
+		GraphDataTO graphData = new GraphDataTO();
+		List<GraphDatasetTO> graphDatasets = new ArrayList<>();
+		Map<String, Integer> datesMap = new LinkedHashMap<>();
+		UpdateListwithDates(datesMap, noOfDays);
+		graphData.setLabels(datesMap.keySet().stream().collect(Collectors.toList()));
+		for (JiraSummaryTO jiraSummaryTO : jiraSummayDetails) {
+			GraphDatasetTO graphDataSet = new GraphDatasetTO();
+			graphDataSet.setLabel(jiraSummaryTO.getKey());
+			graphDataSet.setBackgroundColor("rgb(" + random.nextInt(high - low) + "," + random.nextInt(high - low) + ","
+					+ random.nextInt(high - low) + ",0.5)");
+			creatingWorkhoursData(datesMap, jiraSummaryTO.getWorkLogDaySummeryTOs());
+			List<Integer> hoursWorked = new ArrayList<>();
+			for (Map.Entry<String, Integer> entry : datesMap.entrySet()) {
+				hoursWorked.add(entry.getValue());
+				entry.setValue(null);
+			}
+			graphDataSet.setData(hoursWorked);
+			graphDatasets.add(graphDataSet);
+		}
+		graphData.setDatasets(graphDatasets);
+		return graphData;
+	}
+
+	private void creatingWorkhoursData(Map<String, Integer> datesMap, List<WorkLogDaySummaryTO> workLogs) {
+		for (WorkLogDaySummaryTO workLogDaySummaryTO : workLogs) {
+			if (datesMap.containsKey(
+					workLogDaySummaryTO.getStartDate().substring(0, workLogDaySummaryTO.getStartDate().indexOf("T")))) {
+				datesMap.put(
+						workLogDaySummaryTO.getStartDate().substring(0,
+								workLogDaySummaryTO.getStartDate().indexOf("T")),
+						Integer.parseInt(workLogDaySummaryTO.getTotalTimeSpent().replaceAll("(?i)(h)", "")));
+			}
+		}
+		for (Map.Entry<String, Integer> entry : datesMap.entrySet()) {
+			if (entry.getValue() == null) {
+				entry.setValue(0);
+			}
+		}
+	}
+
+	private void UpdateListwithDates(Map<String, Integer> dates, int noOfDays) {
+		LocalDate currentDate = LocalDate.now();
+		for (int i = noOfDays; i >= 0; i--) {
+			dates.put(currentDate.minusDays(i).toString(), null);
 		}
 	}
 }

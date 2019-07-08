@@ -2,8 +2,8 @@ package com.cerner.shipit.taskmanagement.utility.tos;
 
 public class AuthTO {
 
-	String username;
-	String password;
+	private String username;
+	private String password;
 
 	public String getUsername() {
 		return username;

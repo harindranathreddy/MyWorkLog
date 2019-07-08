@@ -26,6 +26,7 @@ public class MethodConstants {
 	public static final String GET_JIRADETAILS_FOR_SUMMARY = "getjiraDetailsForSummary";
 	public static final String GET_USER_SUMMARY = "getUserSummary";
 	public static final String UPDATE_JIRA_WORKLOG_SUMMARY = "updateJiraWorklogSummary";
+	public static final String GET_USER_SUMMARY_GRAPH_DETAILS = "getUserSummaryGraphData";
 
 	private MethodConstants() {
 

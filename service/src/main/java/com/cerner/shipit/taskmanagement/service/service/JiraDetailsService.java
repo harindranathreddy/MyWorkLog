@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.cerner.shipit.taskmanagement.exception.TaskManagementServiceException;
+import com.cerner.shipit.taskmanagement.utility.tos.GraphDataTO;
 import com.cerner.shipit.taskmanagement.utility.tos.JiraSummaryTO;
 import com.cerner.shipit.taskmanagement.utility.tos.JiraTO;
 import com.cerner.shipit.taskmanagement.utility.tos.WorkLogInfoTO;
@@ -24,5 +25,7 @@ public interface JiraDetailsService {
 			throws TaskManagementServiceException;
 
 	List<JiraSummaryTO> getUserSummary(String userId, int noOfDays) throws TaskManagementServiceException;
+
+	GraphDataTO getUserSummaryGraphData(int noOfDays, List<JiraSummaryTO> jiraSummayDetails);
 
 }

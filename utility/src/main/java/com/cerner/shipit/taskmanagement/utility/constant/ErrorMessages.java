@@ -30,6 +30,8 @@ public class ErrorMessages {
 	public static final String FAILED_DURING_USER_SUMMARY_CREATION = "Failed during user summary creation.";
 	public static final String NO_JIRA_UPDATED_IN_PROVIDED_TIME_FRAME = "No Jira updated in provided time frame.";
 	public static final String FAILED_DURING_USER_WORKLOG_SUMMARY_CALCULATION = "Failed during jira worklog summary details.";
+	public static final String USER_SUMMARY_GRAPH_DATA_FETCHED_SUCCESFULLY = "User Summary Graph data fetched succesfully.";
+	public static final String USER_SUMMARY_DETAILS_NOT_AVAILABLE = "User Summary details not available to generate graph data.";
 
 	private ErrorMessages() {
 

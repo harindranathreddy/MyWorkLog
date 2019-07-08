@@ -26,8 +26,10 @@ import com.cerner.shipit.taskmanagement.utility.constant.ErrorMessages;
 import com.cerner.shipit.taskmanagement.utility.constant.GeneralConstants;
 import com.cerner.shipit.taskmanagement.utility.constant.MethodConstants;
 import com.cerner.shipit.taskmanagement.utility.response.Response;
+import com.cerner.shipit.taskmanagement.utility.tos.GraphDataTO;
 import com.cerner.shipit.taskmanagement.utility.tos.JiraSummaryTO;
 import com.cerner.shipit.taskmanagement.utility.tos.JiraTO;
+import com.cerner.shipit.taskmanagement.utility.tos.UserSummaryGraphRequestDataTO;
 import com.cerner.shipit.taskmanagement.utility.tos.WorkLogInfoTO;
 
 @CrossOrigin
@@ -205,6 +207,29 @@ public class JiraDetailsController {
 		}
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
 				MethodConstants.GET_JIRADETAILS_FOR_SUMMARY);
+		return responseEntity;
+	}
+
+	@PostMapping(value = "/getUserSummaryGraphData", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> getUserSummaryGraphData(@RequestBody UserSummaryGraphRequestDataTO userSummary) {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
+				MethodConstants.GET_USER_SUMMARY_GRAPH_DETAILS);
+		ResponseEntity<Object> responseEntity = null;
+		Response response = new Response();
+		GraphDataTO graphData = new GraphDataTO();
+		final JiraDetailsService jiraDetailsService = jiraDetailsFactory
+				.getJiraDetailsServiceInstance("jiraDetailsServiceImpl");
+		if (null != userSummary.getJiraSummaryDetails()) {
+			graphData = jiraDetailsService.getUserSummaryGraphData(userSummary.getNoOfDays(),
+					userSummary.getJiraSummaryDetails());
+			responseEntity = ResponseEntity.status(HttpStatus.OK).body(response.getSuccessResposne(ErrorCodes.UGD01,
+					ErrorMessages.USER_SUMMARY_GRAPH_DATA_FETCHED_SUCCESFULLY, graphData));
+		} else {
+			responseEntity = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response
+					.getSuccessResposne(ErrorCodes.UGD02, ErrorMessages.USER_SUMMARY_DETAILS_NOT_AVAILABLE, null));
+		}
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
+				MethodConstants.GET_USER_SUMMARY_GRAPH_DETAILS);
 		return responseEntity;
 	}
 }

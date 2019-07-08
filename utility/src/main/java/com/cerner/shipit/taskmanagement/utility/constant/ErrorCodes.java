@@ -55,6 +55,10 @@ public class ErrorCodes {
 	public static final String US03 = "US03";
 	public static final String US04 = "US04";
 	
+	// User Summary Graph
+	public static final String UGD01 = "UGD01";
+	public static final String UGD02 = "UGD02";
+	
 	private ErrorCodes() {
 
 	}

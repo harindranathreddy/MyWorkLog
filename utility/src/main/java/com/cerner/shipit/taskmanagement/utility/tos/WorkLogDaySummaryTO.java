@@ -6,6 +6,7 @@ public class WorkLogDaySummaryTO {
 	private String currentTimeSpent;
 	private String loggedTime;
 	private String totalTimeSpent;
+	private String comments;
 	private long totalSeconds;
 
 	public String getStartDate() {
@@ -46,6 +47,14 @@ public class WorkLogDaySummaryTO {
 
 	public void setTotalSeconds(long totalSeconds) {
 		this.totalSeconds = totalSeconds;
+	}
+
+	public String getComments() {
+		return comments;
+	}
+
+	public void setComments(String comments) {
+		this.comments = comments;
 	}
 
 	
