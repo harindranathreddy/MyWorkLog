@@ -32,6 +32,15 @@ public class ErrorMessages {
 	public static final String FAILED_DURING_USER_WORKLOG_SUMMARY_CALCULATION = "Failed during jira worklog summary details.";
 	public static final String USER_SUMMARY_GRAPH_DATA_FETCHED_SUCCESFULLY = "User Summary Graph data fetched succesfully.";
 	public static final String USER_SUMMARY_DETAILS_NOT_AVAILABLE = "User Summary details not available to generate graph data.";
+	public static final String FAILED_TO_CREATE_USER = "Failed to create user.";
+	public static final String USER_CREATED = "User created Succesfully";
+	public static final String USER_DETAILS_FETCHED = "User details fetched successfully.";
+	public static final String TEAM_CREATED_SUCCESSFULLY = "Team Created Succesfully";
+	public static final String TEAM_NOT_CREATED = "Failed to create Team. Please try after sometime.";
+	public static final String TEAM_EXISTS = "Team already exist.";
+	public static final String TEAMS_FETCHED_SUCCESSFULLY = "Teams Fetched Succesuffly.";
+	public static final String NO_TEAMS_AVAILABLE = "No Teams Available";
+	
 
 	private ErrorMessages() {
 

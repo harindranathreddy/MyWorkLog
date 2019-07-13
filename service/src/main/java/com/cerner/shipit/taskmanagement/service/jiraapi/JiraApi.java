@@ -252,7 +252,8 @@ public class JiraApi {
 			if (responseCode != 200) {
 				logger.info(GeneralConstants.LOGGER_FORMAT_2, ErrorCodes.E05, ErrorMessages.FAILED_TO_AUTHENTICATE_USER,
 						userName);
-				throw new TaskManagementServiceException(ErrorCodes.E05, ErrorMessages.FAILED_TO_AUTHENTICATE_USER);
+				loginresponseTO.setStatus(responseCode);
+				loginresponseTO.setMessage(connection.getResponseMessage());
 			} else {
 				loginresponseTO.setStatus(responseCode);
 				loginresponseTO.setMessage(connection.getResponseMessage());
@@ -281,6 +282,8 @@ public class JiraApi {
 			connection.setRequestProperty("Cookie", headers.get("Set-Cookie").toString());
 			connection.setRequestProperty("Accept", "*/*");
 			connection.setRequestProperty("Content-Type", "application/json");
+			connection.setRequestProperty("Host", "jira2.cerner.com");
+			connection.setRequestProperty("Upgrade-Insecure-Requests", "1");
 			connection.connect();
 			if (connection.getResponseCode() == 200) {
 				Reader in = new BufferedReader(

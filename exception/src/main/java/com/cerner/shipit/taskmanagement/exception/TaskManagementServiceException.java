@@ -21,6 +21,12 @@ public class TaskManagementServiceException extends Exception {
 	        this.errorMessage = errorMessage;
 	    }
 
+	    public TaskManagementServiceException(TaskManagementDBException error) {
+	        super(error.getCause());
+	        this.errorCode = error.getErrorCode();
+	        this.errorMessage = error.getErrorMessage();
+	    }
+	    
 	    public String getErrorCode() {
 	        return this.errorCode;
 	    }

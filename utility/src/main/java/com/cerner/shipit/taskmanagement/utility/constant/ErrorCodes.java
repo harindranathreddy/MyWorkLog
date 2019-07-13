@@ -41,6 +41,8 @@ public class ErrorCodes {
 	public static final String U02 = "U02";
 	public static final String U03 = "U03";
 	public static final String U04 = "U04";
+	public static final String U05 = "U05";
+	public static final String U06 = "U06";
 	
 	// Work Log Verification
 	public static final String WLV01 = "WLV01";
@@ -58,6 +60,13 @@ public class ErrorCodes {
 	// User Summary Graph
 	public static final String UGD01 = "UGD01";
 	public static final String UGD02 = "UGD02";
+	
+	// Team Created
+	public static final String T01 = "T01";
+	public static final String T02 = "T02";
+	public static final String T03 = "T03";
+	public static final String T04 = "T04";
+	public static final String T05 = "T05";
 	
 	private ErrorCodes() {
 

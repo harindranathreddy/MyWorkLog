@@ -27,6 +27,15 @@ public class MethodConstants {
 	public static final String GET_USER_SUMMARY = "getUserSummary";
 	public static final String UPDATE_JIRA_WORKLOG_SUMMARY = "updateJiraWorklogSummary";
 	public static final String GET_USER_SUMMARY_GRAPH_DETAILS = "getUserSummaryGraphData";
+	public static final String FIND_BY_USER_ID = "findByUserId";
+	public static final String CREATE_USER = "createUser";
+	public static final String UPDATE_USER_SUMMARY_WITH_SUCCESS = "updateUserSummaryWithSuccess";
+	public static final String UPDATE_USER_SUMMARY_WITH_FAILURE = "updateUserSummaryWithFailure";
+	public static final String GET_USERDETAILS_BY_ID = "getUserDetailsById";
+	public static final String GET_USERDETAILS_SERVICE_INSTANCE = "getUserDetailsServiceInstance";
+	public static final String CREATE_TEAM = "createTeam";
+	public static final String FIND_BY_TEAM_NAME = "findByTeamName";
+	public static final String GET_ALL_TEAMS = "getAllTeams";
 
 	private MethodConstants() {
 

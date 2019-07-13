@@ -27,6 +27,7 @@
 	<modules>
 		<module>exception</module>
 		<module>utility</module>
+		<module>dao</module>
 		<module>service</module>
 		<module>ui</module>
 	</modules>
