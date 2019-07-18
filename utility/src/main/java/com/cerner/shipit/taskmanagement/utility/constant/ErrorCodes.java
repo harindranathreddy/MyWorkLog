@@ -43,6 +43,9 @@ public class ErrorCodes {
 	public static final String U04 = "U04";
 	public static final String U05 = "U05";
 	public static final String U06 = "U06";
+	public static final String U07 = "U07";
+	public static final String U08 = "U08";
+	public static final String U09 = "U09";
 	
 	// Work Log Verification
 	public static final String WLV01 = "WLV01";

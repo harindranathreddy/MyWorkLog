@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.cerner.shipit.taskmanagement.utility.entity.UserTeam;
 
 @Repository
-public interface UserTeamRepositiry extends JpaRepository<UserTeam, Long>{
+public interface UserTeamRepository extends JpaRepository<UserTeam, Long>{
 
 }

@@ -42,7 +42,7 @@ public class JiraCookieBasedAuthentactionServiceImpl implements JiraAuthentactio
 		TOToEntity toConverter = new TOToEntity();
 		try {
 			response = jiraApi.authenticateUserforCookies(userName, password);
-			UserTO userTO = daoImpl.findByUserId(userName);
+			UserTO userTO = daoImpl.getUserDetailsById(userName);
 			if (response.getStatus() == 200) {
 				if (userTO == null) {
 					String userDetails = jiraApi.getUserDetailsFromJira(userName, response.getHeaders());

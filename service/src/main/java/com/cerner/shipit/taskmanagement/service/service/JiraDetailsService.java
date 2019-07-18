@@ -28,4 +28,6 @@ public interface JiraDetailsService {
 
 	GraphDataTO getUserSummaryGraphData(int noOfDays, List<JiraSummaryTO> jiraSummayDetails);
 
+	List<JiraTO> getJiraDetailsByTeam(String teamName) throws TaskManagementServiceException;
+
 }

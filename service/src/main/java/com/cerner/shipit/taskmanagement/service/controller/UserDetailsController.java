@@ -24,6 +24,7 @@ import com.cerner.shipit.taskmanagement.utility.constant.GeneralConstants;
 import com.cerner.shipit.taskmanagement.utility.constant.MethodConstants;
 import com.cerner.shipit.taskmanagement.utility.response.Response;
 import com.cerner.shipit.taskmanagement.utility.tos.TeamTO;
+import com.cerner.shipit.taskmanagement.utility.tos.UserTO;
 
 @CrossOrigin
 @RestController
@@ -60,7 +61,7 @@ public class UserDetailsController {
 
 	@GetMapping(value = "/getAllteams", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> getAllteams() {
-		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START, MethodConstants.CREATE_TEAM);
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START, MethodConstants.GET_ALL_TEAMS);
 		ResponseEntity<Object> responseEntity = null;
 		Response response = new Response();
 		final UserDetailsService userDetailsService = userDetailsFactory
@@ -78,7 +79,32 @@ public class UserDetailsController {
 		} catch (TaskManagementServiceException e) {
 			responseEntity = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response.getErrorResponse(e));
 		}
-		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.CREATE_TEAM);
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.GET_ALL_TEAMS);
+		return responseEntity;
+	}
+
+	@PostMapping(value = "/updateUserRecords", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> updateUserRecords(@RequestBody UserTO userTO) {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
+				MethodConstants.UPDATE_USER_RECORDS);
+		ResponseEntity<Object> responseEntity = null;
+		Response response = new Response();
+		final UserDetailsService userDetailsService = userDetailsFactory
+				.getUserDetailsServiceInstance("userDetailsServiceImpl");
+		UserTO user;
+		try {
+			user = userDetailsService.updateUserRecords(userTO);
+			if (user != null) {
+				responseEntity = ResponseEntity.status(HttpStatus.OK)
+						.body(response.getSuccessResposne(ErrorCodes.U07, ErrorMessages.USER_RECORD_UPDATED, user));
+			} else {
+				responseEntity = ResponseEntity.status(HttpStatus.OK).body(
+						response.getSuccessResposne(ErrorCodes.U08, ErrorMessages.USER_RECORD_FAILED_TO_UPDATE, null));
+			}
+		} catch (TaskManagementServiceException e) {
+			responseEntity = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response.getErrorResponse(e));
+		}
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.UPDATE_USER_RECORDS);
 		return responseEntity;
 	}
 }

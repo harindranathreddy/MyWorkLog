@@ -1,5 +1,6 @@
 package com.cerner.shipit.taskmanagement.dao.repositoryimpl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -20,16 +21,16 @@ import com.cerner.shipit.taskmanagement.utility.entity.Teams;
 
 @Repository
 @Component("TeamRepositoryCustomImpl")
-public class TeamRepositoryCustomImpl implements TeamRepositoryCustom{
-	
+public class TeamRepositoryCustomImpl implements TeamRepositoryCustom {
+
 	Logger logger = LoggerFactory.getLogger(TeamRepositoryCustomImpl.class);
 
 	@Autowired
 	private EntityManager entityManager;
 
-	public Teams findByTeamName(String teamName) throws TaskManagementDBException{
+	public Teams findByTeamName(String teamName) throws TaskManagementDBException {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START, MethodConstants.FIND_BY_TEAM_NAME);
-		Teams team= null;
+		Teams team = null;
 		Query query = entityManager.createQuery(SQLQuery.FETCH_BY_TEAM_NAME);
 		query.setParameter("NAME", teamName);
 		List response = query.getResultList();

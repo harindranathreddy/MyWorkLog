@@ -11,6 +11,7 @@ public class JiraTO {
 	private String jiraLink;
 	private String issueIcon;
 	private String statusIcon;
+	private String assignedTo;
 
 	public String getId() {
 		return Id;
@@ -82,6 +83,14 @@ public class JiraTO {
 
 	public void setStatusIcon(String statusIcon) {
 		this.statusIcon = statusIcon;
+	}
+
+	public String getAssignedTo() {
+		return assignedTo;
+	}
+
+	public void setAssignedTo(String assignedTo) {
+		this.assignedTo = assignedTo;
 	}
 	
 	

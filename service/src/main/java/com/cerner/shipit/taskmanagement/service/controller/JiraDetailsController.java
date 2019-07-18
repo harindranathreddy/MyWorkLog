@@ -74,6 +74,31 @@ public class JiraDetailsController {
 		return responseEntity;
 	}
 
+	@GetMapping(value = "/jiraDetailsByTeam", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> getJiraDetailsByTeam(@RequestParam(value = "teamName") String teamName) {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
+				MethodConstants.GET_JIRADETAILS_BY_TEAM);
+		List<JiraTO> jiraDetilas = new ArrayList<>();
+		ResponseEntity<Object> responseEntity = null;
+		Response response = new Response();
+		try {
+			final JiraDetailsService jiraDetailsService = jiraDetailsFactory
+					.getJiraDetailsServiceInstance("jiraDetailsServiceImpl");
+			jiraDetilas = jiraDetailsService.getJiraDetailsByTeam(teamName);
+			responseEntity = ResponseEntity.status(HttpStatus.OK).body(response.getSuccessResposne(ErrorCodes.J01,
+					ErrorMessages.JIRA_DETAIALS_FETCHED_SUCCESFULLY, jiraDetilas));
+			logger.info(GeneralConstants.LOGGER_FORMAT_2, ErrorCodes.J01,
+					ErrorMessages.JIRA_DETAIALS_FETCHED_SUCCESFULLY, teamName);
+		} catch (final TaskManagementServiceException e) {
+			responseEntity = ResponseEntity.status(HttpStatus.OK).body(response.getErrorResponse(e));
+			logger.info(GeneralConstants.LOGGER_FORMAT_2, e.getErrorCode(), e.getErrorMessage(), teamName);
+			logger.error(GeneralConstants.LOGGER_FORMAT, e.getErrorCode(), e.getErrorMessage());
+		}
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
+				MethodConstants.GET_JIRADETAILS_BY_TEAM);
+		return responseEntity;
+	}
+
 	// Logging the work
 	@PostMapping(value = "/addWorkLog", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> addWorkLog(@RequestBody WorkLogInfoTO workLogInfoTo) {

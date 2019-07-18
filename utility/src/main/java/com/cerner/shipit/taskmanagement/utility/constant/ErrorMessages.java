@@ -40,6 +40,9 @@ public class ErrorMessages {
 	public static final String TEAM_EXISTS = "Team already exist.";
 	public static final String TEAMS_FETCHED_SUCCESSFULLY = "Teams Fetched Succesuffly.";
 	public static final String NO_TEAMS_AVAILABLE = "No Teams Available";
+	public static final String USER_RECORD_UPDATED = "User Record Updated.";
+	public static final String USER_RECORD_FAILED_TO_UPDATE = "User record failed to update.";
+	public static final String USER_DETAILS_NOT_AVAILABLE = "User never logged in to this application. Please ask the associate to login atleast once to optin.";
 	
 
 	private ErrorMessages() {

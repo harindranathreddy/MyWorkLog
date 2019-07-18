@@ -67,4 +67,21 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 		return teams;
 	}
 
+	@Override
+	public UserTO updateUserRecords(UserTO userTO) throws TaskManagementServiceException {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
+				MethodConstants.UPDATE_USER_RECORDS);
+		UserTO user;
+		try {
+			user = daoImpl.updateUserRecords(userTO);
+			if ((userTO.getTeam() != null) && !userTO.getTeam().isEmpty()) {
+				userTO = daoImpl.updateUserTeam(userTO);
+			}
+		} catch (TaskManagementDBException e) {
+			throw new TaskManagementServiceException(e);
+		}
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.UPDATE_USER_RECORDS);
+		return userTO;
+	}
+
 }

@@ -55,6 +55,17 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 		return jiraDetails;
 	}
 
+	@Override
+	public List<JiraTO> getJiraDetailsByTeam(String teamName) throws TaskManagementServiceException {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
+				MethodConstants.GET_JIRADETAILS_BY_TEAM);
+		String jiraDetailsfromApi = jiraApi.getJiraDetailsByTeam(teamName);
+		List<JiraTO> jiraDetails = filterJiraDetails(jiraDetailsfromApi, null);
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
+				MethodConstants.GET_JIRADETAILS_BY_TEAM);
+		return jiraDetails;
+	}
+
 	private List<JiraTO> filterJiraDetails(String jiraDetailsfromApi, String userId)
 			throws TaskManagementServiceException {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START, MethodConstants.FILTER_JIRADETAILS);
@@ -77,7 +88,15 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 				JSONObject issueType = fields.getJSONObject("issuetype");
 				jira.setType(issueType.getString("name"));
 				jira.setIssueIcon(issueType.getString("iconUrl"));
-				jira.setLastLoggedDate(getJiraLastWorkLogDate(jiraObject.getString("key"), userId));
+				if (userId != null) {
+					jira.setLastLoggedDate(getJiraLastWorkLogDate(jiraObject.getString("key"), userId));
+				} else {
+					jira.setLastLoggedDate(null);
+				}
+				if (!fields.isNull("assignee")) {
+					JSONObject assignedUser = fields.getJSONObject("assignee");
+					jira.setAssignedTo(assignedUser.getString("displayName"));
+				}
 				jiraDetails.add(jira);
 			}
 		} catch (JSONException e) {
@@ -177,7 +196,11 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 					JSONObject jsonObject = new JSONObject(jiraWorkLog);
 					JSONArray workLogsArray = jsonObject.getJSONArray("worklogs");
 					for (int i = 0; i < workLogsArray.length(); i++) {
-						workLogs.add(workLogsArray.getJSONObject(i));
+						JSONObject author = workLogsArray.getJSONObject(i).getJSONObject("author");
+						if ((null == workLogInfoTo.getUserName())
+								|| author.getString("key").equalsIgnoreCase(workLogInfoTo.getUserName())) {
+							workLogs.add(workLogsArray.getJSONObject(i));
+						}
 					}
 					jiraWorkLogs.put(workLogDetailsTO.getId(), workLogs);
 				}

@@ -9,6 +9,7 @@ public class UserTO {
 	String role;
 	boolean notification = true;
 	String team;
+	long teamId;
 
 	public String getUserId() {
 		return userId;
@@ -65,5 +66,15 @@ public class UserTO {
 	public void setTeam(String team) {
 		this.team = team;
 	}
+
+	public long getTeamId() {
+		return teamId;
+	}
+
+	public void setTeamId(long teamId) {
+		this.teamId = teamId;
+	}
+	
+	
 
 }

@@ -36,6 +36,10 @@ public class MethodConstants {
 	public static final String CREATE_TEAM = "createTeam";
 	public static final String FIND_BY_TEAM_NAME = "findByTeamName";
 	public static final String GET_ALL_TEAMS = "getAllTeams";
+	public static final String UPDATE_USER_RECORDS = "updateUserRecords";
+	public static final String UPDATE_USER_TEAM = "updateUserTeam";
+	public static final String FIND_BY_ASSIGNED_USER = "findByAssignedUser";
+	public static final String GET_JIRADETAILS_BY_TEAM = "getJiraDetailsByTeam";
 
 	private MethodConstants() {
 

@@ -100,8 +100,13 @@ public class AuthenticationController {
 			final UserDetailsService userDetailsService = userDetailsFactory
 					.getUserDetailsServiceInstance("userDetailsServiceImpl");
 			UserTO userTO = userDetailsService.getUserDetailsById(userId.toUpperCase(Locale.ROOT));
-			responseEntity = ResponseEntity.status(HttpStatus.OK)
-					.body(response.getSuccessResposne(ErrorCodes.U06, ErrorMessages.USER_DETAILS_FETCHED, userTO));
+			if (userTO.getUserId() != null) {
+				responseEntity = ResponseEntity.status(HttpStatus.OK)
+						.body(response.getSuccessResposne(ErrorCodes.U06, ErrorMessages.USER_DETAILS_FETCHED, userTO));
+			} else {
+				responseEntity = ResponseEntity.status(HttpStatus.OK).body(
+						response.getSuccessResposne(ErrorCodes.U09, ErrorMessages.USER_DETAILS_NOT_AVAILABLE, null));
+			}
 
 		} catch (final TaskManagementServiceException e) {
 			logger.error(GeneralConstants.LOGGER_FORMAT, e.getErrorCode(), e.getErrorMessage());

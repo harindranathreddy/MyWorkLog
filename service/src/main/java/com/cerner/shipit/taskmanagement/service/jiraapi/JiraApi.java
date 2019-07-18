@@ -45,7 +45,7 @@ public class JiraApi {
 		try {
 			URL jiraURL = new URL("https://jira2.cerner.com/rest/api/2/search?jql=(%20assignee%20=%20" + userId
 					+ "%20OR%20%22Solution%20Designer%22=" + userId + "%20OR%20%22Test%20Analyst%22=" + userId
-					+ "%20)AND%20STATUS%20NOT%20IN%20(%27CLOSED%27,%27ISSUE%20DONE%27)");
+					+ "%20)AND%20STATUS%20NOT%20IN%20(%27CLOSED%27,%27ISSUE%20DONE%27)%20ORDER%20BY%20updated");
 			connection = (HttpURLConnection) jiraURL.openConnection();
 			connection.setRequestMethod("GET");
 			connection.connect();
@@ -352,6 +352,44 @@ public class JiraApi {
 
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
 				MethodConstants.GET_INPROGRESS_JIRADETAILS_BY_USERID);
+		return jiraDetails;
+	}
+
+	public String getJiraDetailsByTeam(String teamName) throws TaskManagementServiceException {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
+				MethodConstants.GET_JIRADETAILS_BY_TEAM);
+		String jiraDetails;
+		HttpURLConnection connection = null;
+		try {
+			URL jiraURL = new URL("https://jira2.cerner.com/rest/api/2/search?jql=labels%20=%20" + teamName
+					+ "%20and%20status%20not%20in%20(Closed,%22Issue%20Done%22,Blocked)%20ORDER%20BY%20updated");
+			connection = (HttpURLConnection) jiraURL.openConnection();
+			connection.setRequestMethod("GET");
+			connection.connect();
+			if (connection.getResponseCode() == 200) {
+				Reader in = new BufferedReader(
+						new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+				jiraDetails = IOUtils.toString(in);
+			} else {
+				throw new TaskManagementServiceException(ErrorCodes.E03, ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS);
+			}
+		} catch (final UnsupportedEncodingException e) {
+			logger.error(ErrorCodes.E01, ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS);
+			throw new TaskManagementServiceException(ErrorCodes.E01, ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS);
+		} catch (final ClientProtocolException e) {
+			logger.error(ErrorCodes.E02, ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS);
+			throw new TaskManagementServiceException(ErrorCodes.E02, ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS);
+		} catch (final IOException e) {
+			logger.error(ErrorCodes.E03, ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS);
+			throw new TaskManagementServiceException(ErrorCodes.E03, ErrorMessages.FAILED_TO_FETCH_JIRA_DETAILS);
+		} finally {
+			if (connection != null) {
+				connection.disconnect();
+			}
+		}
+
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
+				MethodConstants.GET_JIRADETAILS_BY_TEAM);
 		return jiraDetails;
 	}
 }
