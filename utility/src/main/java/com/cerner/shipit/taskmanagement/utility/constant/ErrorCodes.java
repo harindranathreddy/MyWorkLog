@@ -70,6 +70,12 @@ public class ErrorCodes {
 	public static final String T03 = "T03";
 	public static final String T04 = "T04";
 	public static final String T05 = "T05";
+	public static final String T06 = "T06";
+	public static final String T07 = "T07";
+	
+	// Team Members
+	public static final String TM01 = "TM01";
+	public static final String TM02 = "TM02";
 	
 	private ErrorCodes() {
 

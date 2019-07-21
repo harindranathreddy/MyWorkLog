@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cerner.shipit.taskmanagement.exception.TaskManagementServiceException;
@@ -105,6 +106,31 @@ public class UserDetailsController {
 			responseEntity = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response.getErrorResponse(e));
 		}
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.UPDATE_USER_RECORDS);
+		return responseEntity;
+	}
+
+	@GetMapping(value = "/getTeamMembers", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> getTeamMembers(@RequestParam(value = "userId") String userId,
+			@RequestParam(value = "teamName") String teamName) {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START, MethodConstants.GET_TEAM_MEMBERS);
+		ResponseEntity<Object> responseEntity = null;
+		Response response = new Response();
+		final UserDetailsService userDetailsService = userDetailsFactory
+				.getUserDetailsServiceInstance("userDetailsServiceImpl");
+		List<UserTO> teamMembers;
+		try {
+			teamMembers = userDetailsService.getTeamMembers(userId, teamName);
+			if (teamMembers != null) {
+				responseEntity = ResponseEntity.status(HttpStatus.OK).body(
+						response.getSuccessResposne(ErrorCodes.TM01, ErrorMessages.TEAM_MEMBERS_FETCHED, teamMembers));
+			} else {
+				responseEntity = ResponseEntity.status(HttpStatus.OK).body(
+						response.getSuccessResposne(ErrorCodes.TM02, ErrorMessages.TEAM_MEMBERS_FAILED_TO_FETCH, null));
+			}
+		} catch (TaskManagementServiceException e) {
+			responseEntity = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response.getErrorResponse(e));
+		}
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.GET_TEAM_MEMBERS);
 		return responseEntity;
 	}
 }

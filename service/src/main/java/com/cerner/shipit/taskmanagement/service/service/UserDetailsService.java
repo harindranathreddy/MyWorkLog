@@ -17,4 +17,6 @@ public interface UserDetailsService {
 	List<TeamTO> getAllteams() throws TaskManagementServiceException;
 
 	UserTO updateUserRecords(UserTO userTO) throws TaskManagementServiceException;
+
+	List<UserTO> getTeamMembers(String userId, String teamName) throws TaskManagementServiceException;
 }

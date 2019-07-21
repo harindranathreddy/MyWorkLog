@@ -318,9 +318,8 @@ public class JiraApi {
 		String jiraDetails;
 		HttpURLConnection connection = null;
 		try {
-			URL jiraURL = new URL("https://jira2.cerner.com/rest/api/2/search?jql=(%20assignee%20=%20" + userId
-					+ "%20OR%20%22Solution%20Designer%22=" + userId + "%20OR%20%22Test%20Analyst%22=" + userId
-					+ "%20)AND%20worklogDate%20%3E=%20startOfDay(-" + noOfDays + "d)");
+			URL jiraURL = new URL("https://jira2.cerner.com/rest/api/2/search?jql=worklogAuthor=" + userId
+					+ "%20AND%20worklogDate%20%3E=%20startOfDay(-" + noOfDays + "d)");
 			connection = (HttpURLConnection) jiraURL.openConnection();
 			connection.setRequestMethod("GET");
 			connection.connect();

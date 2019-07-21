@@ -17,18 +17,20 @@ import com.cerner.shipit.taskmanagement.dao.repository.UserTeamRepositoryCustom;
 import com.cerner.shipit.taskmanagement.utility.constant.GeneralConstants;
 import com.cerner.shipit.taskmanagement.utility.constant.MethodConstants;
 import com.cerner.shipit.taskmanagement.utility.constant.SQLQuery;
+import com.cerner.shipit.taskmanagement.utility.entity.User;
 import com.cerner.shipit.taskmanagement.utility.entity.UserTeam;
 
 @Repository
 @Component("UserTeamRepositoryCustomImpl")
-public class UserTeamRepositoryCustomImpl implements UserTeamRepositoryCustom{
+public class UserTeamRepositoryCustomImpl implements UserTeamRepositoryCustom {
 	Logger logger = LoggerFactory.getLogger(UserTeamRepositoryCustomImpl.class);
 
 	@Autowired
 	private EntityManager entityManager;
 
 	public List<UserTeam> findByAssignedUser(long id) {
-		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START, MethodConstants.FIND_BY_ASSIGNED_USER);
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
+				MethodConstants.FIND_BY_ASSIGNED_USER);
 		List<UserTeam> userTeams = new ArrayList<UserTeam>();
 		Query query = entityManager.createQuery(SQLQuery.FIND_BY_ASSIGNED_USER);
 		query.setParameter("USER", id);
@@ -36,7 +38,21 @@ public class UserTeamRepositoryCustomImpl implements UserTeamRepositoryCustom{
 		for (Object userTeam : response) {
 			userTeams.add((UserTeam) userTeam);
 		}
-		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.FIND_BY_ASSIGNED_USER);
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
+				MethodConstants.FIND_BY_ASSIGNED_USER);
+		return userTeams;
+	}
+
+	public List<UserTeam> findByTeamId(long id) {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START, MethodConstants.FIND_BY_TEAM_ID);
+		List<UserTeam> userTeams = new ArrayList<UserTeam>();
+		Query query = entityManager.createQuery(SQLQuery.FIND_BY_TEAM_ID);
+		query.setParameter("TEAM", id);
+		List response = query.getResultList();
+		for (Object userTeam : response) {
+			userTeams.add((UserTeam) userTeam);
+		}
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.FIND_BY_TEAM_ID);
 		return userTeams;
 	}
 }
