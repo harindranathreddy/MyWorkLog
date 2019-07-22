@@ -126,17 +126,22 @@ public class DAOImpl {
 	public UserTO getUserDetailsById(String userId) throws TaskManagementDBException {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
 				MethodConstants.GET_USERDETAILS_BY_ID);
-		UserTO userTO = new UserTO();
+		UserTO userTO = null;
 		User userEntity = userRepositoryCustom.findByUserId(userId);
 		if (userEntity != null) {
+			userTO = new UserTO();
 			EntityToTO entityToTO = new EntityToTO();
 			userTO = entityToTO.convertUserEntitytoUserTO(userEntity);
 			List<UserTeam> userteams = userTeamRepositiryCustomImpl.findByAssignedUser(userEntity.getId());
-			for (UserTeam userTeam : userteams) {
-				if (userTO.getTeam() != null) {
-					userTO.setTeam("");
+			if (!userteams.isEmpty()) {
+				for (UserTeam userTeam : userteams) {
+					if (userTO.getTeam() != null) {
+						userTO.setTeam("");
+					}
+					userTO.setTeam(userTeam.getTeam().getName());
 				}
-				userTO.setTeam(userTeam.getTeam().getName());
+			}else {
+				userTO.setTeam("");
 			}
 		}
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
@@ -197,7 +202,7 @@ public class DAOImpl {
 			}
 			if (!userTO.isNotification()) {
 				user.setNotification(false);
-			}else {
+			} else {
 				user.setNotification(true);
 			}
 			userRepository.save(user);
@@ -208,20 +213,19 @@ public class DAOImpl {
 	}
 
 	public UserTO updateUserTeam(UserTO userTO) throws TaskManagementDBException {
-		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START,
-				MethodConstants.UPDATE_USER_TEAM);
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START, MethodConstants.UPDATE_USER_TEAM);
 		EntityToTO entityToTO = new EntityToTO();
 		UserTO updatedUserTO = new UserTO();
 		User user = userRepositoryCustom.findByUserId(userTO.getUserId());
 		if (user != null && userTO.getTeamId() > 0) {
 			List<UserTeam> userTeams = userTeamRepositiryCustomImpl.findByAssignedUser(user.getId());
-			if(userTeams.isEmpty()) {
+			if (userTeams.isEmpty()) {
 				UserTeam userTeam = new UserTeam();
 				userTeam.setUser(user);
 				userTeam.setTeam(teamsRepository.getOne(userTO.getTeamId()));
 				userTeamRepositiry.save(userTeam);
-			}else {
-				UserTeam team  = userTeams.get(0);
+			} else {
+				UserTeam team = userTeams.get(0);
 				team.setTeam(teamsRepository.getOne(userTO.getTeamId()));
 				userTeamRepositiry.save(team);
 			}
@@ -238,9 +242,9 @@ public class DAOImpl {
 		EntityToTO entityToTO = new EntityToTO();
 		TeamTO teamTO = new TeamTO();
 		Teams team = teamRepositoryCustomImpl.findByTeamName(teamName);
-		if(team != null) {
+		if (team != null) {
 			teamTO = entityToTO.convertTeamEntitytoTeamTO(team);
-		}else {
+		} else {
 			throw new TaskManagementDBException(ErrorCodes.T06, ErrorMessages.TEAM_NOT_AVAILABLE);
 		}
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
@@ -254,11 +258,12 @@ public class DAOImpl {
 		EntityToTO entityToTO = new EntityToTO();
 		List<UserTO> userDetails = new ArrayList<UserTO>();
 		List<UserTeam> teamMembers = userTeamRepositiryCustomImpl.findByTeamId(id);
-		if(teamMembers != null) {
+		if (teamMembers != null) {
 			for (UserTeam userMember : teamMembers) {
-				userDetails.add(entityToTO.convertUserEntitytoUserTO(userRepositoryCustom.findByUserId(userMember.getUser().getUserId())));
+				userDetails.add(entityToTO.convertUserEntitytoUserTO(
+						userRepositoryCustom.findByUserId(userMember.getUser().getUserId())));
 			}
-		}else {
+		} else {
 			throw new TaskManagementDBException(ErrorCodes.T06, ErrorMessages.TEAM_NOT_AVAILABLE);
 		}
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,

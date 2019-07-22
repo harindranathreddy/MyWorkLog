@@ -4,7 +4,7 @@ import java.util.List;
 
 public class GraphDatasetTO {
 	String label;
-	List<Integer> data;
+	List<Double> data;
 	String backgroundColor;
 
 	public String getLabel() {
@@ -15,11 +15,11 @@ public class GraphDatasetTO {
 		this.label = label;
 	}
 
-	public List<Integer> getData() {
+	public List<Double> getData() {
 		return data;
 	}
 
-	public void setData(List<Integer> data) {
+	public void setData(List<Double> data) {
 		this.data = data;
 	}
 

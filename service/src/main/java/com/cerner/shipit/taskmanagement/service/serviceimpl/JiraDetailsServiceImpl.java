@@ -250,7 +250,7 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 					totalLogTime += workLog.getTotalSeconds();
 				}
 			}
-			jiraSummaryTO.setTotalHoursLogged((TimeUnit.SECONDS.toHours(totalLogTime)) + "h");
+			jiraSummaryTO.setTotalHoursLogged((totalLogTime / 3600.00) + "h");
 		}
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
 				MethodConstants.CALCULATING_TOTAL_JIRA_LOG_TIME);
@@ -274,8 +274,12 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 			}
 			workLogDaySummaryTO.setCurrentTimeSpent(workLogDetailsTO.getTimeSpent());
 			if (workLogDetailsTO.getTimeSpent().endsWith("h") || workLogDetailsTO.getTimeSpent().endsWith("H")) {
-				currentLogTimeInSeconds = TimeUnit.HOURS
-						.toSeconds(Long.parseLong(workLogDetailsTO.getTimeSpent().replaceAll("(?i)(h)", "")));
+				double time = Double.parseDouble(workLogDetailsTO.getTimeSpent().replaceAll("(?i)(h)", ""));
+				long hours = (long) time;
+				long minutes = (long) (time * 60) % 60;
+				long seconds = (long) (time * (60 * 60)) % 60;
+				currentLogTimeInSeconds = TimeUnit.HOURS.toSeconds(hours) + TimeUnit.MINUTES.toSeconds(minutes)
+						+ seconds;
 			} else if (workLogDetailsTO.getTimeSpent().endsWith("m") || workLogDetailsTO.getTimeSpent().endsWith("M")) {
 				currentLogTimeInSeconds = TimeUnit.MINUTES
 						.toSeconds(Long.parseLong(workLogDetailsTO.getTimeSpent().replaceAll("(?i)(m)", "")));
@@ -289,7 +293,7 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 				totalWorkTime = currentLogTimeInSeconds;
 			}
 			workLogDaySummaryTO.setTotalSeconds(totalWorkTime);
-			workLogDaySummaryTO.setTotalTimeSpent((TimeUnit.SECONDS.toHours(totalWorkTime)) + "h");
+			workLogDaySummaryTO.setTotalTimeSpent((totalWorkTime / 3600.00) + "h");
 
 		} catch (JSONException e) {
 			logger.error(ErrorCodes.WLD01, ErrorMessages.FAILED_DURING_WORKLOG_DATE);
@@ -381,8 +385,7 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 					workLogDaySummaryTO.setStartDate(worklogStartedDate);
 					workLogDaySummaryTO.setTotalSeconds(
 							workLogDaySummaryTO.getTotalSeconds() + dayWorkLog.getLong("timeSpentSeconds"));
-					workLogDaySummaryTO
-							.setTotalTimeSpent(TimeUnit.SECONDS.toHours(workLogDaySummaryTO.getTotalSeconds()) + "h");
+					workLogDaySummaryTO.setTotalTimeSpent((workLogDaySummaryTO.getTotalSeconds() / 3600.00) + "h");
 					if (null == workLogDaySummaryTO.getComments()) {
 						workLogDaySummaryTO.setComments("");
 					}
@@ -417,7 +420,7 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 		int high = 256;
 		GraphDataTO graphData = new GraphDataTO();
 		List<GraphDatasetTO> graphDatasets = new ArrayList<>();
-		Map<String, Integer> datesMap = new LinkedHashMap<>();
+		Map<String, Double> datesMap = new LinkedHashMap<>();
 		UpdateListwithDates(datesMap, noOfDays);
 		graphData.setLabels(datesMap.keySet().stream().collect(Collectors.toList()));
 		for (JiraSummaryTO jiraSummaryTO : jiraSummayDetails) {
@@ -426,8 +429,8 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 			graphDataSet.setBackgroundColor("rgb(" + random.nextInt(high - low) + "," + random.nextInt(high - low) + ","
 					+ random.nextInt(high - low) + ",0.5)");
 			creatingWorkhoursData(datesMap, jiraSummaryTO.getWorkLogDaySummeryTOs());
-			List<Integer> hoursWorked = new ArrayList<>();
-			for (Map.Entry<String, Integer> entry : datesMap.entrySet()) {
+			List<Double> hoursWorked = new ArrayList<>();
+			for (Map.Entry<String, Double> entry : datesMap.entrySet()) {
 				hoursWorked.add(entry.getValue());
 				entry.setValue(null);
 			}
@@ -438,24 +441,24 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 		return graphData;
 	}
 
-	private void creatingWorkhoursData(Map<String, Integer> datesMap, List<WorkLogDaySummaryTO> workLogs) {
+	private void creatingWorkhoursData(Map<String, Double> datesMap, List<WorkLogDaySummaryTO> workLogs) {
 		for (WorkLogDaySummaryTO workLogDaySummaryTO : workLogs) {
 			if (datesMap.containsKey(
 					workLogDaySummaryTO.getStartDate().substring(0, workLogDaySummaryTO.getStartDate().indexOf("T")))) {
 				datesMap.put(
 						workLogDaySummaryTO.getStartDate().substring(0,
 								workLogDaySummaryTO.getStartDate().indexOf("T")),
-						Integer.parseInt(workLogDaySummaryTO.getTotalTimeSpent().replaceAll("(?i)(h)", "")));
+						Double.parseDouble(workLogDaySummaryTO.getTotalTimeSpent().replaceAll("(?i)(h)", "")));
 			}
 		}
-		for (Map.Entry<String, Integer> entry : datesMap.entrySet()) {
+		for (Map.Entry<String, Double> entry : datesMap.entrySet()) {
 			if (entry.getValue() == null) {
-				entry.setValue(0);
+				entry.setValue(0.0);
 			}
 		}
 	}
 
-	private void UpdateListwithDates(Map<String, Integer> dates, int noOfDays) {
+	private void UpdateListwithDates(Map<String, Double> dates, int noOfDays) {
 		LocalDate currentDate = LocalDate.now();
 		for (int i = noOfDays; i >= 0; i--) {
 			dates.put(currentDate.minusDays(i).toString(), null);

@@ -43,8 +43,8 @@ public class JiraApi {
 		String jiraDetails;
 		HttpURLConnection connection = null;
 		try {
-			URL jiraURL = new URL("https://jira2.cerner.com/rest/api/2/search?jql=(%20assignee%20=%20" + userId
-					+ "%20OR%20%22Solution%20Designer%22=" + userId + "%20OR%20%22Test%20Analyst%22=" + userId
+			URL jiraURL = new URL("https://jira2.cerner.com/rest/api/2/search?maxResults=100&jql=(%20assignee%20=%20"
+					+ userId + "%20OR%20%22Solution%20Designer%22=" + userId + "%20OR%20%22Test%20Analyst%22=" + userId
 					+ "%20)AND%20STATUS%20NOT%20IN%20(%27CLOSED%27,%27ISSUE%20DONE%27)%20ORDER%20BY%20updated");
 			connection = (HttpURLConnection) jiraURL.openConnection();
 			connection.setRequestMethod("GET");
@@ -318,8 +318,8 @@ public class JiraApi {
 		String jiraDetails;
 		HttpURLConnection connection = null;
 		try {
-			URL jiraURL = new URL("https://jira2.cerner.com/rest/api/2/search?jql=worklogAuthor=" + userId
-					+ "%20AND%20worklogDate%20%3E=%20startOfDay(-" + noOfDays + "d)");
+			URL jiraURL = new URL("https://jira2.cerner.com/rest/api/2/search?maxResults=100&jql=worklogAuthor="
+					+ userId + "%20AND%20worklogDate%20%3E=%20startOfDay(-" + noOfDays + "d)");
 			connection = (HttpURLConnection) jiraURL.openConnection();
 			connection.setRequestMethod("GET");
 			connection.connect();
@@ -360,7 +360,8 @@ public class JiraApi {
 		String jiraDetails;
 		HttpURLConnection connection = null;
 		try {
-			URL jiraURL = new URL("https://jira2.cerner.com/rest/api/2/search?jql=labels%20=%20" + teamName
+			URL jiraURL = new URL("https://jira2.cerner.com/rest/api/2/search?maxResults=100&jql=labels%20=%20"
+					+ teamName
 					+ "%20and%20status%20not%20in%20(Closed,%22Issue%20Done%22,Blocked)%20ORDER%20BY%20updated");
 			connection = (HttpURLConnection) jiraURL.openConnection();
 			connection.setRequestMethod("GET");
