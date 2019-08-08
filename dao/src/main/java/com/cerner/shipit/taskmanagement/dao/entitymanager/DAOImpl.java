@@ -140,7 +140,7 @@ public class DAOImpl {
 					}
 					userTO.setTeam(userTeam.getTeam().getName());
 				}
-			}else {
+			} else {
 				userTO.setTeam("");
 			}
 		}
@@ -269,6 +269,30 @@ public class DAOImpl {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END,
 				MethodConstants.GET_TEAM_BASED_ON_TEAM_NAME);
 		return userDetails;
+	}
+
+	public UserTO findByUserEmailId(String emailId) throws TaskManagementDBException {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START, MethodConstants.FIND_BY_EMAIL_ID);
+		EntityToTO entityToTO = new EntityToTO();
+		UserTO userTO = null;
+		User user = userRepositoryCustom.findByUserEmailId(emailId);
+		if (user != null) {
+			userTO = entityToTO.convertUserEntitytoUserTO(user);
+		}
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.FIND_BY_EMAIL_ID);
+		return userTO;
+	}
+
+	public List<UserTO> getActiveNotificationUsers() throws TaskManagementDBException {
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START, MethodConstants.GET_ACTIVE_NOTIFICATION_USERS);
+		EntityToTO entityToTO = new EntityToTO();
+		List<UserTO> userTOs = null;
+		List<User> users = userRepositoryCustom.getActiveNotificationUsers();
+		for (User user : users) {
+			userTOs.add(entityToTO.convertUserEntitytoUserTO(user));
+		}
+		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.GET_ACTIVE_NOTIFICATION_USERS);
+		return userTOs;
 	}
 
 }

@@ -20,6 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import com.cerner.shipit.taskmanagement.dao.entitymanager.DAOImpl;
+import com.cerner.shipit.taskmanagement.exception.TaskManagementDBException;
 import com.cerner.shipit.taskmanagement.exception.TaskManagementServiceException;
 import com.cerner.shipit.taskmanagement.service.jiraapi.JiraApi;
 import com.cerner.shipit.taskmanagement.service.service.JiraDetailsService;
@@ -31,6 +33,7 @@ import com.cerner.shipit.taskmanagement.utility.tos.GraphDataTO;
 import com.cerner.shipit.taskmanagement.utility.tos.GraphDatasetTO;
 import com.cerner.shipit.taskmanagement.utility.tos.JiraSummaryTO;
 import com.cerner.shipit.taskmanagement.utility.tos.JiraTO;
+import com.cerner.shipit.taskmanagement.utility.tos.UserTO;
 import com.cerner.shipit.taskmanagement.utility.tos.WorkLogDaySummaryTO;
 import com.cerner.shipit.taskmanagement.utility.tos.WorkLogDetailsTO;
 import com.cerner.shipit.taskmanagement.utility.tos.WorkLogInfoTO;
@@ -43,6 +46,9 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 
 	@Autowired
 	JiraApi jiraApi;
+
+	@Autowired
+	private DAOImpl daoImpl;
 
 	@Override
 	public List<JiraTO> getJiraDetailsByUserId(String userId) throws TaskManagementServiceException {
@@ -332,6 +338,18 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_START, MethodConstants.GET_USER_SUMMARY);
 		List<JiraSummaryTO> userSummaryDetails = new ArrayList<>();
 		try {
+			if (userId.endsWith("@cerner.com")) {
+				UserTO userTO = daoImpl.findByUserEmailId(userId);
+				if (userTO != null) {
+					userId = userTO.getUserId();
+				} else {
+					logger.error(GeneralConstants.LOGGER_FORMAT_2, ErrorCodes.US05,
+							ErrorMessages.USER_WITH_MAILID_DOES_NOT_EXIST, userId);
+					throw new TaskManagementServiceException(ErrorCodes.US05,
+							ErrorMessages.USER_WITH_MAILID_DOES_NOT_EXIST);
+				}
+
+			}
 			String updatedJiraDetails = jiraApi.getAllJirasUpdatedForSummary(userId, noOfDays);
 			JSONObject jiraDetails = new JSONObject(updatedJiraDetails);
 			if (jiraDetails.getInt("total") > 0) {
@@ -354,6 +372,8 @@ public class JiraDetailsServiceImpl implements JiraDetailsService {
 			logger.error(ErrorCodes.US02, ErrorMessages.FAILED_DURING_USER_SUMMARY_CREATION);
 			throw new TaskManagementServiceException(ErrorCodes.US02,
 					ErrorMessages.FAILED_DURING_USER_SUMMARY_CREATION);
+		} catch (TaskManagementDBException e) {
+			throw new TaskManagementServiceException(e);
 		}
 
 		logger.debug(GeneralConstants.LOGGER_FORMAT, GeneralConstants.METHOD_END, MethodConstants.GET_USER_SUMMARY);

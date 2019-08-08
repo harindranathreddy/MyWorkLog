@@ -43,6 +43,8 @@ public class MethodConstants {
 	public static final String GET_TEAM_MEMBERS = "getTeamMembers";
 	public static final String GET_TEAM_BASED_ON_TEAM_NAME = "getTeamBasedOnTeamName";
 	public static final String FIND_BY_TEAM_ID = "findByTeamId";
+	public static final String GET_ACTIVE_NOTIFICATION_USERS = "getActiveNotificationUsers";
+	public static final String FIND_BY_EMAIL_ID = "findByUserEmailId";
 
 	private MethodConstants() {
 

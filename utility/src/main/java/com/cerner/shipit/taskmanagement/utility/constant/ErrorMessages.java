@@ -47,6 +47,7 @@ public class ErrorMessages {
 	public static final String TEAM_MEMBERS_FAILED_TO_FETCH = "Team Members failed to fetch";
 	public static final String TEAM_NOT_AVAILABLE = "Team Not Available";
 	public static final String NO_PERMISIONS_TO_ACCESS_THIS_DATA = "You have no permissions to access this data";
+	public static final String USER_WITH_MAILID_DOES_NOT_EXIST = "User with provided mailid does not exist in out system. Please try with user id.";
 	
 
 	private ErrorMessages() {
